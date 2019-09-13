@@ -270,7 +270,89 @@ namespace Z80
             case 0x37: /* scf */
                 set_CF(true);
                 pc++; break;
-
+            case 0x38: /* jr c, * */
+                if(*F & 0x1) pc += (int)rom[pc+1];
+                pc += 2; break;
+            case 0x39:
+                ADD(HL.p, sp);
+                pc++; break;
+            case 0x3A:
+                LD(*A, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                pc += 3; break;
+            case 0x3B:
+                DEC(sp);
+                pc++; break;
+            case 0x3C:
+                INC(*A);
+                pc++; break;
+            case 0x3D:
+                DEC(*A);
+                pc++; break;
+            case 0x3E:
+                LD(*A, rom[pc+1]);
+                pc += 2; break;
+            case 0x3F: /* ccf */
+                set_CF(!(*F & 0x1));
+                pc++; break;
+            
+            case 0x40:
+                LD(*B, *B);
+                pc++; break;
+            case 0x41:
+                LD(*B, *C);
+                pc++; break;
+            case 0x42:
+                LD(*B, *D);
+                pc++; break;
+            case 0x43:
+                LD(*B, *E);
+                pc++; break;
+            case 0x44:
+                LD(*B, *H);
+                pc++; break;
+            case 0x45:
+                LD(*B, *L);
+                pc++; break;
+            case 0x46:
+                LD(*B, memory[HL.r[0] << 8 | HL.r[1]]);
+                pc++; break;
+            case 0x47:
+                LD(*B, *A);
+                pc++; break;
+            case 0x48:
+                LD(*C, *B);
+                pc++; break;
+            case 0x49:
+                LD(*C, *C);
+                pc++; break;
+            case 0x4A:
+                LD(*C, *D);
+                pc++; break;
+            case 0x4B:
+                LD(*C, *E);
+                pc++; break;
+            case 0x4C:
+                LD(*C, *H);
+                pc++; break;
+            case 0x4D:
+                LD(*C, *L);
+                pc++; break;
+            case 0x4E:
+                LD(*C, memory[HL.r[0] << 8 | HL.r[1]]);
+                pc++; break;
+            case 0x4F:
+                LD(*C, *A);
+                pc++; break;
+            
+            case 0x50:
+                LD(*D, *B);
+                pc++; break;
+            case 0x51:
+                LD(*D, *C);
+                pc++; break;
+            case 0x52;
+                LD(*D, *D);
+                pc++; break;
 
             default:
                 std::cout << "Unrecognized instruction: " << std::hex << opcode << std::endl;
