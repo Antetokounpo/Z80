@@ -94,6 +94,10 @@ namespace Z80
 
     void Z80::execute(uint8_t opcode)
     {
+        #ifdef DEBUG
+            std::cout << std::hex << "opcode: " << (uint)opcode << std::endl;
+        #endif
+
         switch (opcode)
         {
             case 0x00: /* nop */
@@ -350,22 +354,24 @@ namespace Z80
             case 0x51:
                 LD(*D, *C);
                 pc++; break;
-            case 0x52;
+            case 0x52:
                 LD(*D, *D);
                 pc++; break;
 
             default:
-                std::cout << "Unrecognized instruction: " << std::hex << opcode << std::endl;
+                std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
         }
     }
 
     void Z80::step()
     {
-        
+        uint8_t opcode;
+        opcode = rom[pc];
+        execute(opcode);
     }
 
-    void swap(uint16_t* v1, uint16_t* v2)
+    void Z80::swap(uint16_t* v1, uint16_t* v2)
     {
         uint16_t temp = *v1;
         *v1 = *v2;
