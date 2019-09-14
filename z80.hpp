@@ -272,7 +272,7 @@ namespace Z80
                 DEC(memory[HL.p]);
                 pc++; break;
             case 0x36:
-                LD(memory[rom[HL.r[0]] << 8 | rom[HL.r[1]]], rom[pc+1]);
+                LD(memory[HL.p], rom[pc+1]);
                 pc += 2; break;
             case 0x37: /* scf */
                 set_CF(true);
@@ -321,7 +321,7 @@ namespace Z80
                 LD(*B, *L);
                 pc++; break;
             case 0x46:
-                LD(*B, memory[HL.r[0] << 8 | HL.r[1]]);
+                LD(*B, memory[HL.p]);
                 pc++; break;
             case 0x47:
                 LD(*B, *A);
@@ -345,7 +345,7 @@ namespace Z80
                 LD(*C, *L);
                 pc++; break;
             case 0x4E:
-                LD(*C, memory[HL.r[0] << 8 | HL.r[1]]);
+                LD(*C, memory[HL.p]);
                 pc++; break;
             case 0x4F:
                 LD(*C, *A);
@@ -360,6 +360,48 @@ namespace Z80
             case 0x52:
                 LD(*D, *D);
                 pc++; break;
+            case 0x53:
+                LD(*D, *E);
+                pc++; break;
+            case 0x54:
+                LD(*D, *H);
+                pc++; break;
+            case 0x55:
+                LD(*D, *L);
+                pc++; break;
+            case 0x56:
+                LD(*D, memory[HL.p]);
+                pc++; break;
+            case 0x57:
+                LD(*D, *A);
+                pc++; break;
+            case 0x58:
+                LD(*E, *B);
+                pc++; break;
+            case 0x59:
+                LD(*E, *C);
+                pc++; break;
+            case 0x5A:
+                LD(*E, *D);
+                pc++; break;
+            case 0x5B:
+                LD(*E, *E);
+                pc++; break;
+            case 0x5C:
+                LD(*E, *H);
+                pc++; break;
+            case 0x5D:
+                LD(*E, *L);
+                pc++; break;
+            case 0x5E:
+                LD(*E, memory[HL.p]);
+                pc++; break;
+            case 0x5F:
+                LD(*E, *A);
+                pc++; break;
+
+
+                
 
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
