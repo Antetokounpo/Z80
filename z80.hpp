@@ -449,7 +449,55 @@ namespace Z80
                 LD(*L, *A);
                 pc++; break;
                 
-            
+            case 0x70:
+                LD(memory[HL.p], *B);
+                pc++; break;
+            case 0x71:
+                LD(memory[HL.p], *C);
+                pc++; break;
+            case 0x72:
+                LD(memory[HL.p], *D);
+                pc++; break;
+            case 0x73:
+                LD(memory[HL.p], *E);
+                pc++; break;
+            case 0x74:
+                LD(memory[HL.p], *H);
+                pc++; break;
+            case 0x75:
+                LD(memory[HL.p], *L);
+                pc++; break;
+            case 0x76:
+                // TODO
+                pc++; break;
+            case 0x77
+                LD(memory[HL.p], *A);
+                pc++; break;
+            case 0x78:
+                LD(*A, *B);
+                pc++; break;
+            case 0x79:
+                LD(*A, *C);
+                pc++; break;
+            case 0x7A:
+                LD(*A, *D);
+                pc++; break;
+            case 0x7B:
+                LD(*A, *E);
+                pc++; break;
+            case 0x7C:
+                LD(*A, *H);
+                pc++; break;
+            case 0x7D:
+                LD(*A, *L);
+                pc++; break;
+            case 0x7E:
+                LD(*A, memory[HL.p]);
+                pc++; break;
+            case 0x7F:
+                LD(*A, *A);
+                pc++; break;
+
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
