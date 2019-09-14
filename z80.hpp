@@ -63,7 +63,10 @@ namespace Z80
             void djnz(int value);
             void cpl();
 
-            void set_CF(bool flag);
+            void set_flag(uint8_t flag, bool value);
+            void set_CF(bool value);
+            void set_OF(bool value);
+
             void swap(uint16_t* v1, uint16_t* v2);
     };
 
@@ -113,7 +116,7 @@ namespace Z80
                 INC(BC.p);
                 pc++; break;
             case 0x04:
-                INC(BC.r[0]);
+                INC(*B);
                 pc++; break;
             case 0x05: /* dec b */
                 DEC(BC.r[0]);
@@ -427,10 +430,20 @@ namespace Z80
         }
     }
 
-    void Z80::set_CF(bool flag)
+    void Z80::set_flag(uint8_t flag, bool value)
     {
-        *F &= 0xFE; /* reset */
-        *F |= (uint)flag; /* bit 0 */
+        *F &= 0x1 << flag ^ 0xFF;
+        *F |= (uint)value;
+    }
+
+    void Z80::set_CF(bool value)
+    {
+        set_flag(0, value);
+    }
+
+    void Z80::set_OF(bool value)
+    {
+        set_flag(1, value);
     }
 }
 
