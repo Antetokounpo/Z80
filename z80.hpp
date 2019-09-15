@@ -66,6 +66,7 @@ namespace Z80
             void set_flag(uint8_t flag, bool value);
             void set_CF(bool value);
             void set_OF(bool value);
+            void set_ZF(bool value);
 
             void swap(uint16_t* v1, uint16_t* v2);
     };
@@ -115,11 +116,13 @@ namespace Z80
             case 0x03: /* inc bc */
                 INC(BC.p);
                 pc++; break;
-            case 0x04:
+            case 0x04: /* inc b */
                 INC(*B);
+                set_ZF(*B == 0)
                 pc++; break;
             case 0x05: /* dec b */
-                DEC(BC.r[0]);
+                DEC(*B);
+                set_ZF(*B == 0);
                 pc++; break;
             case 0x06: /* ld b, * */
                 LD(*B, rom[pc+1]);
@@ -498,6 +501,10 @@ namespace Z80
                 LD(*A, *A);
                 pc++; break;
 
+            case 0x80:
+                ADD(*A, *B);
+                pc++; break;
+
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
@@ -580,7 +587,12 @@ namespace Z80
 
     void Z80::set_OF(bool value)
     {
-        set_flag(1, value);
+        set_flag(2, value);
+    }
+
+    void Z80::set_ZF(bool value)
+    {
+        set_flag(6, value);
     }
 }
 
