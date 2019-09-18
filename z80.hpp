@@ -65,8 +65,9 @@ namespace Z80
 
             void set_flag(uint8_t flag, bool value);
             void set_CF(bool value);
-            void set_OF(bool value);
+            void set_POF(bool value);
             void set_ZF(bool value);
+            void flag_affect(uint result, int8_t flags[]);
 
             void swap(uint16_t* v1, uint16_t* v2);
     };
@@ -118,7 +119,8 @@ namespace Z80
                 pc++; break;
             case 0x04: /* inc b */
                 INC(*B);
-                set_ZF(*B == 0)
+                set_NF(false);
+                set_ZF(*B == 0);
                 pc++; break;
             case 0x05: /* dec b */
                 DEC(*B);
@@ -447,7 +449,7 @@ namespace Z80
                 pc++; break;
             case 0x6E:
                 LD(*L, memory[HL.p]);
-                pc++; break;
+                pc++; break;
             case 0x6F:
                 LD(*L, *A);
                 pc++; break;
@@ -473,7 +475,7 @@ namespace Z80
             case 0x76:
                 // TODO
                 pc++; break;
-            case 0x77
+            case 0x77:
                 LD(memory[HL.p], *A);
                 pc++; break;
             case 0x78:
@@ -585,7 +587,7 @@ namespace Z80
         set_flag(0, value);
     }
 
-    void Z80::set_OF(bool value)
+    void Z80::set_POF(bool value)
     {
         set_flag(2, value);
     }
