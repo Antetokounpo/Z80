@@ -10,7 +10,7 @@
 #define LD(DST, SRC) DST = SRC
 #define INC(O) O += 1
 #define DEC(O) O -= 1
-#define ADD(DST, SRC) DST += SRC
+#define ADD(DST, SRC) DST = add(DST, SRC, sizeof(DST))
 
 namespace Z80
 {
@@ -56,6 +56,8 @@ namespace Z80
             uint8_t memory[65536]; /* Random Access Memory */
             uint8_t* rom;          /* Read-Only Memory */
 
+            uint add(uint dst, uint src, size_t type);
+
             void rlca();
             void rla();
             void rrca();
@@ -65,11 +67,18 @@ namespace Z80
 
             void set_flag(uint8_t flag, bool value);
             void set_CF(bool value);
+            void set_NF(bool value);
             void set_POF(bool value);
+            void set_F3(bool value);
+            void set_HF(bool value);
+            void set_F5(bool value);
             void set_ZF(bool value);
+            void set_SF(bool value);
             void flag_affect(uint result, int8_t flags[]);
 
             void swap(uint16_t* v1, uint16_t* v2);
+            uint8_t onescomp(uint8_t bin);
+            uint twoscomp(uint8_t bin);
     };
 
     bool Z80::load(const char* filename)
@@ -108,8 +117,7 @@ namespace Z80
             case 0x00: /* nop */
                 pc++; break;
             case 0x01: /* ld bc, ** */
-                LD(BC.r[0], rom[pc+1]);
-                LD(BC.r[1], rom[pc+2]);
+                LD(BC.p, rom[pc+1] << 8 | rom[pc+2]);
                 pc += 3; break;
             case 0x02: /* ld (bc), a */
                 LD(memory[BC.p], *A);
@@ -119,8 +127,6 @@ namespace Z80
                 pc++; break;
             case 0x04: /* inc b */
                 INC(*B);
-                set_NF(false);
-                set_ZF(*B == 0);
                 pc++; break;
             case 0x05: /* dec b */
                 DEC(*B);
@@ -520,11 +526,50 @@ namespace Z80
         execute(opcode);
     }
 
+    uint Z80::add(uint dst, uint src, size_t type)
+    {
+        if(type == 16) /* 16 bit operations don't affect flags */
+            return dst + src;
+
+        uint half_result = (dst&0x0F) + (dst&0x0F);
+        uint result = dst + src;
+
+        set_CF(result > 255);
+        set_NF(false);
+        set_POF(twoscomp(result) > 255);
+        set_F3(bool(0x1 << 3 & result));
+        set_HF(bool(half_result & 0x10));
+        set_F5(bool(0x1 << 5 & result));
+        set_ZF(result & 0xFF == 0);
+        set_SF(bool(twoscomp(result) & 0x80));
+
+        return result;
+    }
+
     void Z80::swap(uint16_t* v1, uint16_t* v2)
     {
         uint16_t temp = *v1;
         *v1 = *v2;
         *v2 = temp;
+    }
+
+    uint8_t Z80::onescomp(uint8_t bin)
+    {
+        for(int i = 0; i<8; ++i)
+        {
+            uint8_t b = 0x1 << i;
+            if(bin & b)
+                bin &= 0xFF - b; /* change 1 to 0 */
+            else
+                bin |= b; /* change 0 to 1 */
+        }
+
+        return bin;
+    }
+
+    uint Z80::twoscomp(uint8_t bin)
+    {
+        return onescomp(bin)+1;
     }
 
     void Z80::rlca()
@@ -587,14 +632,39 @@ namespace Z80
         set_flag(0, value);
     }
 
+    void Z80::set_NF(bool value)
+    {
+        set_flag(1, value);
+    }
+
     void Z80::set_POF(bool value)
     {
         set_flag(2, value);
     }
 
+    void Z80::set_F3(bool value)
+    {
+        set_flag(3, value);
+    }
+
+    void Z80::set_HF(bool value)
+    {
+        set_flag(4, value);
+    }
+
+    void Z80::set_F5(bool value)
+    {
+        set_flag(5, value);
+    }
+
     void Z80::set_ZF(bool value)
     {
         set_flag(6, value);
+    }
+
+    void Z80::set_SF(bool value)
+    {
+        set_flag(7, value);
     }
 }
 
