@@ -11,6 +11,7 @@
 #define INC(O) O += 1
 #define DEC(O) O -= 1
 #define ADD(DST, SRC) DST = add(DST, SRC, sizeof(DST))
+#define SUB(SRC) sub(SRC);
 
 namespace Z80
 {
@@ -57,6 +58,7 @@ namespace Z80
             uint8_t* rom;          /* Read-Only Memory */
 
             uint add(uint dst, uint src, size_t type);
+            void sub(uint src);
 
             void rlca();
             void rla();
@@ -74,6 +76,8 @@ namespace Z80
             void set_F5(bool value);
             void set_ZF(bool value);
             void set_SF(bool value);
+
+            uint get_flag(uint flag);
             void flag_affect(uint result, int8_t flags[]);
 
             void swap(uint16_t* v1, uint16_t* v2);
@@ -512,6 +516,100 @@ namespace Z80
             case 0x80:
                 ADD(*A, *B);
                 pc++; break;
+            case 0x81:
+                ADD(*A, *C);
+                pc++; break;
+            case 0x82:
+                ADD(*A, *D);
+                pc++; break;
+            case 0x83:
+                ADD(*A, *E);
+                pc++; break;
+            case 0x84:
+                ADD(*A, *H);
+                pc++; break;
+            case 0x85:
+                ADD(*A, *L);
+                pc++; break;
+            case 0x86:
+                ADD(*A, memory[HL.p]);
+                pc++; break;
+            case 0x87:
+                ADD(*A, *A);
+                pc++; break;
+            case 0x88:
+                ADD(*A, *B + get_flag(0));
+                pc++; break;
+            case 0x89:
+                ADD(*A, *C + get_flag(0));
+                pc++; break;
+            case 0x8A:
+                ADD(*A, *D + get_flag(0));
+                pc++; break;
+            case 0x8B:
+                ADD(*A, *E + get_flag(0));
+                pc++; break;
+            case 0x8C:
+                ADD(*A, *H + get_flag(0));
+                pc++; break;
+            case 0x8D:
+                ADD(*A, *L + get_flag(0));
+                pc++; break;
+            case 0x8E:
+                ADD(*A, memory[HL.p] + get_flag(0));
+                pc++; break;
+            case 0x8F:
+                ADD(*A, *A + get_flag(0));
+                pc++; break;
+
+            case 0x90:
+                SUB(*B);
+                pc++; break;
+            case 0x91:
+                SUB(*C);
+                pc++; break;
+            case 0x92:
+                SUB(*D);
+                pc++; break;
+            case 0x93:
+                SUB(*E);
+                pc++; break;
+            case 0x94:
+                SUB(*H);
+                pc++; break;
+            case 0x95:
+                SUB(*L);
+                pc++; break;
+            case 0x96:
+                SUB(memory[HL.p]);
+                pc++; break;
+            case 0x97:
+                SUB(*A);
+                pc++; break;
+            case 0x98:
+                SUB(*B + get_flag(0));
+                pc++; break;
+            case 0x99:
+                SUB(*C + get_flag(0));
+                pc++; break;
+            case 0x9A:
+                SUB(*D + get_flag(0));
+                pc++; break;
+            case 0x9B:
+                SUB(*E + get_flag(0));
+                pc++; break;
+            case 0x9C:
+                SUB(*H + get_flag(0));
+                pc++; break;
+            case 0x9D:
+                SUB(*L + get_flag(0));
+                pc++; break;
+            case 0x9E:
+                SUB(memory[HL.p] + get_flag(0));
+                pc++; break;
+            case 0x9F:
+                SUB(*A + get_flag(0));
+                pc++; break;
 
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
@@ -528,7 +626,7 @@ namespace Z80
 
     uint Z80::add(uint dst, uint src, size_t type)
     {
-        if(type == 16) /* 16 bit operations don't affect flags */
+        if(type == 2) /* 16 bit operations don't affect flags */
             return dst + src;
 
         uint half_result = (dst&0x0F) + (dst&0x0F);
@@ -544,6 +642,22 @@ namespace Z80
         set_SF(bool(twoscomp(result) & 0x80));
 
         return result;
+    }
+
+    void Z80::sub(uint src)
+    {
+        uint result = *A - src;
+
+        set_CF(result > 255);
+        set_NF(true);
+        set_POF(twoscomp(result) > 255);
+        set_F3(bool(0x1 << 3 & result));
+        set_HF(bool(half_result & 0x10));
+        set_F5(bool(0x1 << 5 & result));
+        set_ZF(result & 0xFF == 0);
+        set_SF(bool(twoscomp(result) & 0x80));
+
+        *A = result;
     }
 
     void Z80::swap(uint16_t* v1, uint16_t* v2)
@@ -665,6 +779,11 @@ namespace Z80
     void Z80::set_SF(bool value)
     {
         set_flag(7, value);
+    }
+
+    uint Z80::get_flag(uint flag)
+    {
+        return *F << flag & 0x1;
     }
 }
 
