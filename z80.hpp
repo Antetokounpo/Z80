@@ -13,6 +13,7 @@
 #define ADD(DST, SRC) DST = add(DST, SRC, sizeof(DST))
 #define SUB(SRC) sub(SRC);
 #define AND(SRC) bitwise_and(SRC)
+#define XOR(SRC) bitwise_xor(SRC)
 
 namespace Z80
 {
@@ -61,6 +62,7 @@ namespace Z80
             uint add(uint dst, uint src, size_t type);
             void sub(uint src);
             void bitwise_and(uint src);
+            void bitwise_xor(uint src);
 
             void rlca();
             void rla();
@@ -614,6 +616,55 @@ namespace Z80
                 SUB(*A + get_flag(0));
                 pc++; break;
 
+            case 0xA0:
+                AND(*B);
+                pc++; break;
+            case 0xA1:
+                AND(*C);
+                pc++; break;
+            case 0xA2:
+                AND(*D);
+                pc++; break;
+            case 0xA3:
+                AND(*E);
+                pc++; break;
+            case 0xA4:
+                AND(*H);
+                pc++; break;
+            case 0xA5:
+                AND(*L);
+                pc++; break;
+            case 0xA6:
+                AND(memory[HL.p]);
+                pc++; break;
+            case 0xA7:
+                AND(*A);
+                pc++; break;
+            case 0xA8:
+                XOR(*B);
+                pc++; break;
+            case 0xA9:
+                XOR(*C);
+                pc++; break;
+            case 0xAA:
+                XOR(*D);
+                pc++; break;
+            case 0xAB:
+                XOR(*E);
+                pc++; break;
+            case 0xAC:
+                XOR(*H);
+                pc++; break;
+            case 0xAD:
+                XOR(*L);
+                pc++; break;
+            case 0xAE:
+                XOR(memory[HL.p]);
+                pc++; break;
+            case 0xAF:
+                XOR(*A);
+                pc++; break;
+
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
@@ -667,10 +718,25 @@ namespace Z80
     void Z80::bitwise_and(uint src)
     {
         uint result = *A & src;
+
         set_CF(false);
         set_NF(false);
-        set_POF(parity_check(src));
+        set_POF(parity_check(result));
         set_HF(true);
+        set_ZF(result == 0);
+        set_SF(bool(twoscomp(result) & 0x80));
+
+        *A = result;
+    }
+
+    void Z80::bitwise_xor(uint src)
+    {
+        uint result = *A ^ src;
+
+        set_CF(false);
+        set_NF(false);
+        set_POF(parity_check(result));
+        set_HF(false);
         set_ZF(result == 0);
         set_SF(bool(twoscomp(result) & 0x80));
 
