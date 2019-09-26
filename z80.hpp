@@ -12,6 +12,7 @@
 #define DEC(O) O -= 1
 #define ADD(DST, SRC) DST = add(DST, SRC, sizeof(DST))
 #define SUB(SRC) sub(SRC);
+#define AND(SRC) bitwise_and(SRC)
 
 namespace Z80
 {
@@ -59,6 +60,7 @@ namespace Z80
 
             uint add(uint dst, uint src, size_t type);
             void sub(uint src);
+            void bitwise_and(uint src);
 
             void rlca();
             void rla();
@@ -83,6 +85,7 @@ namespace Z80
             void swap(uint16_t* v1, uint16_t* v2);
             uint8_t onescomp(uint8_t bin);
             uint twoscomp(uint8_t bin);
+            bool parity_check(uint bin);
     };
 
     bool Z80::load(const char* filename)
@@ -660,6 +663,19 @@ namespace Z80
         *A = result;
     }
 
+    void Z80::bitwise_and(uint src)
+    {
+        uint result = *A & src;
+        set_CF(false);
+        set_NF(false);
+        set_POF(parity_check(src));
+        set_HF(true);
+        set_ZF(result == 0);
+        set_SF(bool(twocomp(result) & 0x80));
+
+        *A = result;
+    }
+
     void Z80::swap(uint16_t* v1, uint16_t* v2)
     {
         uint16_t temp = *v1;
@@ -684,6 +700,17 @@ namespace Z80
     uint Z80::twoscomp(uint8_t bin)
     {
         return onescomp(bin)+1;
+    }
+
+    uint Z80::parity_check(uint bin)
+    {
+        uint c = 0;
+        for(int i = 0; i<sizeof(bin)*8; ++i)
+        {
+            c += bin << i & 0x1;
+        }
+
+        return !(c % 2);
     }
 
     void Z80::rlca()
