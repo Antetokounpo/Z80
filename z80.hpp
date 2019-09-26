@@ -632,7 +632,7 @@ namespace Z80
         if(type == 2) /* 16 bit operations don't affect flags */
             return dst + src;
 
-        uint half_result = (dst&0x0F) + (dst&0x0F);
+        uint half_result = (dst&0x0F) + (src&0x0F);
         uint result = dst + src;
 
         set_CF(result > 255);
@@ -650,6 +650,7 @@ namespace Z80
     void Z80::sub(uint src)
     {
         uint result = *A - src;
+        uint half_result = (*A & 0x0F) + (src & 0x0F);
 
         set_CF(result > 255);
         set_NF(true);
@@ -671,7 +672,7 @@ namespace Z80
         set_POF(parity_check(src));
         set_HF(true);
         set_ZF(result == 0);
-        set_SF(bool(twocomp(result) & 0x80));
+        set_SF(bool(twoscomp(result) & 0x80));
 
         *A = result;
     }
@@ -702,7 +703,7 @@ namespace Z80
         return onescomp(bin)+1;
     }
 
-    uint Z80::parity_check(uint bin)
+    bool Z80::parity_check(uint bin)
     {
         uint c = 0;
         for(int i = 0; i<sizeof(bin)*8; ++i)
