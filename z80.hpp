@@ -16,6 +16,7 @@
 #define XOR(SRC) bitwise_xor(SRC)
 #define OR(SRC) bitwise_or(SRC)
 #define CP(SRC) cp(SRC)
+#define POP(DST) pop(DST);
 
 namespace Z80
 {
@@ -76,7 +77,7 @@ namespace Z80
             void djnz(int value);
             void cpl();
 
-            void pop(uint16_t dst);
+            void pop(uint16_t* dst);
 
             void set_flag(uint8_t flag, bool value);
             void set_CF(bool value);
@@ -763,7 +764,7 @@ namespace Z80
     void Z80::sub(uint src)
     {
         uint result = *A - src;
-        uint half_result = (*A & 0x0F) + (src & 0x0F);
+        uint half_result = (*A & 0x0F) - (src & 0x0F);
 
         set_CF(result > 255);
         set_NF(true);
@@ -821,6 +822,7 @@ namespace Z80
     void Z80::cp(uint src)
     {
         uint result = *A - src;
+        uint half_result = (*A & 0xF) - (src & 0xF);
 
         set_CF(result > 255);
         set_NF(true);
@@ -916,6 +918,12 @@ namespace Z80
             else
                 *A |= b; /* change 0 to 1 */
         }
+    }
+
+    void Z80::pop(uint16_t* dst)
+    {
+       *dst = memory[sp+1] << 8 | memory[sp];
+       sp += 2;
     }
 
     void Z80::set_flag(uint8_t flag, bool value)
