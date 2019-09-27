@@ -14,6 +14,8 @@
 #define SUB(SRC) sub(SRC);
 #define AND(SRC) bitwise_and(SRC)
 #define XOR(SRC) bitwise_xor(SRC)
+#define OR(SRC) bitwise_or(SRC)
+#define CP(SRC) cp(SRC)
 
 namespace Z80
 {
@@ -58,11 +60,14 @@ namespace Z80
 
             uint8_t memory[65536]; /* Random Access Memory */
             uint8_t* rom;          /* Read-Only Memory */
+            uint rom_size;         /* Size of the ROM file */
 
             uint add(uint dst, uint src, size_t type);
             void sub(uint src);
             void bitwise_and(uint src);
             void bitwise_xor(uint src);
+            void bitwise_or(uint src);
+            void cp(uint src);
 
             void rlca();
             void rla();
@@ -70,6 +75,8 @@ namespace Z80
             void rra();
             void djnz(int value);
             void cpl();
+
+            void pop(uint16_t dst);
 
             void set_flag(uint8_t flag, bool value);
             void set_CF(bool value);
@@ -99,6 +106,7 @@ namespace Z80
         if(file.is_open()){
             size = file.tellg();
             buffer = new char[size];
+            rom_size = size;
 
             file.seekg(0, std::ios::beg);
             file.read(buffer, size);
@@ -665,6 +673,55 @@ namespace Z80
                 XOR(*A);
                 pc++; break;
 
+            case 0xB0:
+                OR(*B);
+                pc++; break;
+            case 0xB1:
+                OR(*C);
+                pc++; break;
+            case 0xB2:
+                OR(*D);
+                pc++; break;
+            case 0xB3:
+                OR(*E);
+                pc++; break;
+            case 0xB4:
+                OR(*H);
+                pc++; break;
+            case 0xB5:
+                OR(*L);
+                pc++; break;
+            case 0xB6:
+                OR(memory[HL.p]);
+                pc++; break;
+            case 0xB7:
+                OR(*A);
+                pc++; break;
+            case 0xB8:
+                CP(*B);
+                pc++; break;
+            case 0xB9:
+                CP(*C);
+                pc++; break;
+            case 0xBA:
+                CP(*D);
+                pc++; break;
+            case 0xBB:
+                CP(*E);
+                pc++; break;
+            case 0xBC:
+                CP(*H);
+                pc++; break;
+            case 0xBD:
+                CP(*L);
+                pc++; break;
+            case 0xBE:
+                CP(memory[HL.p]);
+                pc++; break;
+            case 0xBF:
+                CP(*A);
+                pc++; break;
+
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
@@ -674,6 +731,11 @@ namespace Z80
     void Z80::step()
     {
         uint8_t opcode;
+        if(pc > rom_size)
+        {
+            std::cout << "Program counter overflow" << std::endl;
+            exit(EXIT_FAILURE);
+        }
         opcode = rom[pc];
         execute(opcode);
     }
@@ -723,7 +785,7 @@ namespace Z80
         set_NF(false);
         set_POF(parity_check(result));
         set_HF(true);
-        set_ZF(result == 0);
+        set_ZF(result & 0xFF == 0);
         set_SF(bool(twoscomp(result) & 0x80));
 
         *A = result;
@@ -737,10 +799,37 @@ namespace Z80
         set_NF(false);
         set_POF(parity_check(result));
         set_HF(false);
-        set_ZF(result == 0);
+        set_ZF(result & 0xFF == 0);
         set_SF(bool(twoscomp(result) & 0x80));
 
         *A = result;
+    }
+
+    void Z80::bitwise_or(uint src)
+    {
+        uint result = *A | src;
+        set_CF(false);
+        set_NF(false);
+        set_POF(parity_check(result));
+        set_HF(false);
+        set_ZF(result & 0xFF == 0);
+        set_SF(bool(twoscomp(result) & 0x80));
+
+        *A = result;
+    }
+
+    void Z80::cp(uint src)
+    {
+        uint result = *A - src;
+
+        set_CF(result > 255);
+        set_NF(true);
+        set_POF(twoscomp(result) > 255);
+        set_F3(bool(0x1 << 3 & result));
+        set_HF(bool(half_result & 0x10));
+        set_F5(bool(0x1 << 5 & result));
+        set_ZF(result & 0xFF == 0);
+        set_SF(bool(twoscomp(result) & 0x80));
     }
 
     void Z80::swap(uint16_t* v1, uint16_t* v2)
