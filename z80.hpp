@@ -78,6 +78,7 @@ namespace Z80
             void cpl();
 
             void pop(uint16_t* dst);
+            void push(uint16_t src);
 
             void set_flag(uint8_t flag, bool value);
             void set_CF(bool value);
@@ -924,6 +925,13 @@ namespace Z80
     {
        *dst = memory[sp+1] << 8 | memory[sp];
        sp += 2;
+    }
+
+    void Z80::push(uint16_t src)
+    {
+        memory[sp-1] = src >> 8;
+        memory[sp-2] = src & 0xFF;
+        sp -= 2;
     }
 
     void Z80::set_flag(uint8_t flag, bool value)
