@@ -16,7 +16,8 @@
 #define XOR(SRC) bitwise_xor(SRC)
 #define OR(SRC) bitwise_or(SRC)
 #define CP(SRC) cp(SRC)
-#define POP(DST) pop(DST);
+#define POP(DST) pop(&(DST))
+#define PUSH(SRC) push(SRC)
 
 namespace Z80
 {
@@ -723,6 +724,66 @@ namespace Z80
             case 0xBF:
                 CP(*A);
                 pc++; break;
+
+            case 0xC0: /* ret nz */
+                if(!(get_flag(6))) POP(pc);
+                pc++; break;
+            case 0xC1:
+                POP(BC.p);
+                pc++; break;
+            case 0xC2:
+                if(!(get_flag(6)))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                break;
+            case 0xC3:
+                pc = rom[pc+1] << 8 | rom[pc+2];
+                break;
+            case 0xC4:
+                if(!(get_flag(6)))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }
+                break;
+            case 0xC5:
+                PUSH(BC.p);
+                pc++; break;
+            case 0xC6:
+                ADD(*A, rom[pc+1]);
+                pc += 2; break;
+            case 0xC7:
+                PUSH(pc+1);
+                pc = 0x00; break;
+            case 0xC8:
+                if(get_flag(6)) POP(pc);
+                break;
+            case 0xC9:
+                POP(pc);
+                break;
+            case 0xCA:
+                if(get_flag(6))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                break;
+            case 0xCB:
+                // TODO BITS
+                break;
+            case 0xCC:
+                if(get_flag(6))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }
+                break;
+            case 0xCD:
+                PUSH(pc+3);
+                pc = rom[pc+1] << 8 | rom[pc+2];
+                break;
+            case 0xCE:
+                ADD(*A, rom[pc+1] + get_flag(0));
+                pc += 2; break;
+            case 0xCF:
+                PUSH(pc+1);
+                pc = 0x08; break;
 
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
