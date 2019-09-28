@@ -727,13 +727,16 @@ namespace Z80
 
             case 0xC0: /* ret nz */
                 if(!(get_flag(6))) POP(pc);
-                pc++; break;
+                else pc++;
+                break;
             case 0xC1:
                 POP(BC.p);
                 pc++; break;
             case 0xC2:
                 if(!(get_flag(6)))
                     pc = rom[pc+1] << 8 | rom[pc+2];
+                else
+                    pc += 3;
                 break;
             case 0xC3:
                 pc = rom[pc+1] << 8 | rom[pc+2];
@@ -743,7 +746,8 @@ namespace Z80
                 {
                     PUSH(pc+3);
                     pc = rom[pc+1] << 8 | rom[pc+2];
-                }
+                }else
+                    pc += 3;
                 break;
             case 0xC5:
                 PUSH(BC.p);
@@ -756,6 +760,7 @@ namespace Z80
                 pc = 0x00; break;
             case 0xC8:
                 if(get_flag(6)) POP(pc);
+                else pc++;
                 break;
             case 0xC9:
                 POP(pc);
@@ -763,6 +768,8 @@ namespace Z80
             case 0xCA:
                 if(get_flag(6))
                     pc = rom[pc+1] << 8 | rom[pc+2];
+                else
+                    pc += 3;
                 break;
             case 0xCB:
                 // TODO BITS
@@ -772,7 +779,8 @@ namespace Z80
                 {
                     PUSH(pc+3);
                     pc = rom[pc+1] << 8 | rom[pc+2];
-                }
+                }else
+                    pc += 3;
                 break;
             case 0xCD:
                 PUSH(pc+3);
@@ -784,6 +792,75 @@ namespace Z80
             case 0xCF:
                 PUSH(pc+1);
                 pc = 0x08; break;
+
+            case 0xD0:
+                if(!(get_flag(0))) POP(pc);
+                else pc++;
+                break;
+            case 0xD1:
+                POP(DE.p);
+                pc++; break;
+            case 0xD2:
+                if(!(get_flag(0)))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                else
+                    pc += 3;
+                break;
+            case 0xD3:
+                // TODO
+                break;
+            case 0xD4:
+                if(!(get_flag(0)))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }else
+                    pc += 3;
+                break;
+            case 0xD5:
+                PUSH(DE.p);
+                pc++; break;
+            case 0xD6:
+                SUB(rom[pc+1]);
+                pc += 2; break;
+            case 0xD7:
+                PUSH(pc+1);
+                pc = 0x10; break;
+            case 0xD8:
+                if(get_flag(0)) POP(pc);
+                else pc++;
+                break;
+            case 0xD9:
+                swap(&(BC.p), &(BC_.p));
+                swap(&(DE.p), &(DE_.p));
+                swap(&(HL.p), &(HL_.p));
+                pc++; break;
+            case 0xDA:
+                if(get_flag(0))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                 else
+                    pc += 3;
+                 break;
+            case 0xDB: /* in a, (*) */
+                // TODO
+                break;
+            case 0xDC:
+                if(get_flag(0))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }else
+                    pc += 3;
+                break;
+            case 0xDD:
+                // TODO
+                break;
+            case 0xDE:
+                SUB(rom[pc+1] + get_flag(0));
+                pc += 2; break;
+            case 0xEF:
+                PUSH(pc+1);
+                pc = 0x18; break;
 
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
