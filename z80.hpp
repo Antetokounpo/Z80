@@ -8,10 +8,10 @@
 #include<cmath>
 
 #define LD(DST, SRC) DST = SRC
-#define INC(O) O += 1
-#define DEC(O) O -= 1
+#define INC(O) O = add(O, 1, sizeof(O))
+#define DEC(O) O = sub(O, 1, sizeof(O))
 #define ADD(DST, SRC) DST = add(DST, SRC, sizeof(DST))
-#define SUB(SRC) sub(SRC);
+#define SUB(SRC) sub(*A, SRC, 1);
 #define AND(SRC) bitwise_and(SRC)
 #define XOR(SRC) bitwise_xor(SRC)
 #define OR(SRC) bitwise_or(SRC)
@@ -65,7 +65,7 @@ namespace Z80
             uint rom_size;         /* Size of the ROM file */
 
             uint add(uint dst, uint src, size_t type);
-            void sub(uint src);
+            uint sub(uint dst, uint src, size_t type);
             void bitwise_and(uint src);
             void bitwise_xor(uint src);
             void bitwise_or(uint src);
@@ -858,9 +858,75 @@ namespace Z80
             case 0xDE:
                 SUB(rom[pc+1] + get_flag(0));
                 pc += 2; break;
-            case 0xEF:
+            case 0xDF:
                 PUSH(pc+1);
                 pc = 0x18; break;
+
+            case 0xE0:
+                if(!get_flag(2)) POP(pc);
+                else pc++;
+                break;
+            case 0xE1:
+                POP(HL.p);
+                pc++; break;
+            case 0xE2:
+                if(!get_flag(2))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                else
+                    pc += 3;
+                break;
+            case 0xE3:
+                memory[sp] = HL.r[0];
+                memory[sp+1] = HL.r[1];
+                pc++; break;
+            case 0xE4:
+                if(!get_flag(2))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }else
+                    pc += 3;
+                break;
+            case 0xE5:
+                PUSH(HL.p);
+                pc++; break;
+            case 0xE6:
+                AND(rom[pc+1]);
+                pc += 2; break;
+            case 0xE7:
+                PUSH(pc+1);
+                pc = 0x20; break;
+            case 0xE8:
+                if(get_flag(2)) POP(pc);
+                else pc++;
+                break;
+            case 0xE9: /* jp (hl) */
+                 pc = memory[HL.p];
+                 break;
+            case 0xEA:
+                if(get_flag(2))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                break;
+            case 0xEB:
+                swap(&(DE.p), &(HL.p));
+                pc++; break;
+            case 0xEC:
+                if(get_flag(2))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }else
+                    pc += 3;
+                break;
+            case 0xED:
+                // TODO EXTD
+                break;
+            case 0xEE:
+                XOR(rom[pc+1]);
+                pc += 2; break;
+            case 0xEF:
+                PUSH(pc+1);
+                pc = 0x28; break;
 
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
@@ -900,10 +966,12 @@ namespace Z80
         return result;
     }
 
-    void Z80::sub(uint src)
+    uint Z80::sub(uint dst, uint src, size_t type)
     {
-        uint result = *A - src;
-        uint half_result = (*A & 0x0F) - (src & 0x0F);
+        uint result = dst - src;
+        if(type == 2)
+            return result;
+        uint half_result = (dst & 0x0F) - (src & 0x0F);
 
         set_CF(result > 255);
         set_NF(true);
@@ -914,7 +982,7 @@ namespace Z80
         set_ZF(result & 0xFF == 0);
         set_SF(bool(twoscomp(result) & 0x80));
 
-        *A = result;
+        return result;
     }
 
     void Z80::bitwise_and(uint src)
