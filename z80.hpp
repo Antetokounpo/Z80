@@ -928,6 +928,73 @@ namespace Z80
                 PUSH(pc+1);
                 pc = 0x28; break;
 
+            case 0xF0:
+                if(!get_flag(7)) POP(pc);
+                else pc++;
+                break;
+            case 0xF1:
+                POP(AF.p);
+                pc++; break;
+            case 0xF2:
+                if(!get_flag(7))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                else
+                    pc += 3;
+                break;
+            case 0xF3: /* di */
+                // TODO
+                break;
+            case 0xF4:
+                if(!get_flag(7))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }else
+                    pc += 3;
+                break;
+            case 0xF5:
+                PUSH(AF.p);
+                pc++; break;
+            case 0xF6:
+                OR(rom[pc+1]);
+                pc += 2; break;
+            case 0xF7:
+                PUSH(pc+1);
+                pc = 0x30; break;
+            case 0xF8:
+                if(get_flag(7)) POP(pc);
+                else pc++;
+                break;
+            case 0xF9:
+                LD(sp, HL.p);
+                pc++; break;
+            case 0xFA:
+                if(get_flag(7))
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                else
+                    pc += 3;
+                break;
+            case 0xFB: /* ei */
+                // TODO
+                break;
+            case 0xFC:
+                if(get_flag(7))
+                {
+                    PUSH(pc+3);
+                    pc = rom[pc+1] << 8 | rom[pc+2];
+                }else
+                    pc += 3;
+                break;
+            case 0xFD:
+                // TODO IY
+                break;
+            case 0xFE:
+                CP(rom[pc+1]);
+                pc += 2; break;
+            case 0xFF:
+                PUSH(pc+1);
+                pc = 0x38; break;
+
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
