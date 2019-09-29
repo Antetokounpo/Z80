@@ -1259,4 +1259,16 @@ namespace Z80
     }
 }
 
+#undef LD
+#undef INC
+#undef DEC
+#undef ADD
+#undef SUB
+#undef AND
+#undef XOR
+#undef OR
+#undef CP
+#undef POP
+#undef PUSH
+
 #endif
