@@ -1025,11 +1025,11 @@ namespace Z80
         set_CF(result > 255);
         set_NF(false);
         set_POF(twoscomp(result) > 255);
-        set_F3(bool(0x1 << 3 & result));
-        set_HF(bool(half_result & 0x10));
-        set_F5(bool(0x1 << 5 & result));
-        set_ZF(result & 0xFF == 0);
-        set_SF(bool(twoscomp(result) & 0x80));
+        set_F3(0x1 << 3 & result);
+        set_HF(half_result & 0x10);
+        set_F5(0x1 << 5 & result);
+        set_ZF((result & 0xFF) == 0);
+        set_SF(twoscomp(result) & 0x80);
 
         return result;
     }
@@ -1044,11 +1044,11 @@ namespace Z80
         set_CF(result > 255);
         set_NF(true);
         set_POF(twoscomp(result) > 255);
-        set_F3(bool(0x1 << 3 & result));
-        set_HF(bool(half_result & 0x10));
-        set_F5(bool(0x1 << 5 & result));
-        set_ZF(result & 0xFF == 0);
-        set_SF(bool(twoscomp(result) & 0x80));
+        set_F3(0x1 << 3 & result);
+        set_HF(half_result & 0x10);
+        set_F5(0x1 << 5 & result);
+        set_ZF((result & 0xFF) == 0);
+        set_SF(twoscomp(result) & 0x80);
 
         return result;
     }
@@ -1061,8 +1061,8 @@ namespace Z80
         set_NF(false);
         set_POF(parity_check(result));
         set_HF(true);
-        set_ZF(result & 0xFF == 0);
-        set_SF(bool(twoscomp(result) & 0x80));
+        set_ZF((result & 0xFF) == 0);
+        set_SF(twoscomp(result) & 0x80);
 
         *A = result;
     }
@@ -1075,8 +1075,8 @@ namespace Z80
         set_NF(false);
         set_POF(parity_check(result));
         set_HF(false);
-        set_ZF(result & 0xFF == 0);
-        set_SF(bool(twoscomp(result) & 0x80));
+        set_ZF((result & 0xFF) == 0);
+        set_SF(twoscomp(result) & 0x80);
 
         *A = result;
     }
@@ -1088,8 +1088,8 @@ namespace Z80
         set_NF(false);
         set_POF(parity_check(result));
         set_HF(false);
-        set_ZF(result & 0xFF == 0);
-        set_SF(bool(twoscomp(result) & 0x80));
+        set_ZF((result & 0xFF) == 0);
+        set_SF(twoscomp(result) & 0x80);
 
         *A = result;
     }
@@ -1102,11 +1102,11 @@ namespace Z80
         set_CF(result > 255);
         set_NF(true);
         set_POF(twoscomp(result) > 255);
-        set_F3(bool(0x1 << 3 & result));
-        set_HF(bool(half_result & 0x10));
-        set_F5(bool(0x1 << 5 & result));
-        set_ZF(result & 0xFF == 0);
-        set_SF(bool(twoscomp(result) & 0x80));
+        set_F3(0x1 << 3 & result);
+        set_HF(half_result & 0x10);
+        set_F5(0x1 << 5 & result);
+        set_ZF((result & 0xFF) == 0);
+        set_SF(twoscomp(result) & 0x80);
     }
 
     void Z80::swap(uint16_t* v1, uint16_t* v2)
@@ -1138,7 +1138,7 @@ namespace Z80
     bool Z80::parity_check(uint bin)
     {
         uint c = 0;
-        for(int i = 0; i<sizeof(bin)*8; ++i)
+        for(uint i = 0; i<sizeof(bin)*8; ++i)
         {
             c += bin << i & 0x1;
         }
@@ -1202,7 +1202,7 @@ namespace Z80
         uint8_t old_CF = get_flag(0);
         set_CF(false);
 
-        if(*A & 0xF > 9 || get_flag(4) == 1)
+        if((*A & 0xF) > 9 || get_flag(4) == 1)
         {
             ADD(*A, *A+6);
             set_CF(old_CF || get_flag(0));
