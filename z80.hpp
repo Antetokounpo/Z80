@@ -77,6 +77,7 @@ namespace Z80
             void rra();
             void djnz(int value);
             void cpl();
+            void daa();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -256,7 +257,7 @@ namespace Z80
                 LD(HL.r[0], rom[pc+1]);
                 pc += 2; break;
             case 0x27: /* daa */
-                // TODO
+                daa();
                 break;
             case 0x28: /* jr z, * */
                 if(*F & 0x40) pc += (int)rom[pc+1];
@@ -1192,6 +1193,29 @@ namespace Z80
             else
                 *A |= b; /* change 0 to 1 */
         }
+    }
+
+    void Z80::daa()
+    {
+        /* Code from x86 DAA operation */
+        uint8_t old_A = *A;
+        uint8_t old_CF = get_flag(0);
+        set_CF(false);
+
+        if(*A & 0xF > 9 || get_flag(4) == 1)
+        {
+            ADD(*A, *A+6);
+            set_CF(old_CF || get_flag(0));
+            set_HF(true);
+        }else
+            set_HF(false);
+
+        if(old_A > 0x99 || old_CF == 1)
+        {
+            ADD(*A, *A+0x60);
+            set_CF(true);
+        }else
+            set_CF(false);
     }
 
     void Z80::pop(uint16_t* dst)
