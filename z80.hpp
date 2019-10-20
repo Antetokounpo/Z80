@@ -36,6 +36,8 @@ namespace Z80
             virtual bool load(const char* filename); /* Loads ROM */
             void execute(uint8_t opcode);
 
+            void interrupt();
+
         protected:
             /* Main registers */
             Register AF; uint8_t* A = &(AF.r[0]); uint8_t* F = &(AF.r[1]); /* Bit 	7 	6 	5 	4 	3 	2 	1 	0 */
@@ -63,6 +65,8 @@ namespace Z80
             uint8_t memory[65536]; /* Random Access Memory */
             uint8_t* rom;          /* Read-Only Memory */
             uint rom_size;         /* Size of the ROM file */
+
+            bool pins[40]; /* I/O pins */
 
             uint add(uint dst, uint src, size_t type);
             uint sub(uint dst, uint src, size_t type);
@@ -499,9 +503,9 @@ namespace Z80
             case 0x75:
                 LD(memory[HL.p], *L);
                 pc++; break;
-            case 0x76:
-                // TODO
-                pc++; break;
+            case 0x76: /* halt */
+                pins[17] = true;
+                break;
             case 0x77:
                 LD(memory[HL.p], *A);
                 pc++; break;
@@ -1012,6 +1016,12 @@ namespace Z80
         }
         opcode = rom[pc];
         execute(opcode);
+    }
+
+    void Z80::interrupt()
+    {
+        if(pins[17])
+            pc++;
     }
 
     uint Z80::add(uint dst, uint src, size_t type)
