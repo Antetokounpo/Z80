@@ -18,6 +18,8 @@
 #define CP(SRC) cp(SRC)
 #define POP(DST) pop(&(DST))
 #define PUSH(SRC) push(SRC)
+#define OUT(DST, SRC) ports[DST] = SRC
+#define IN(DST, SRC) DST = ports[SRC]
 
 namespace Z80
 {
@@ -65,6 +67,7 @@ namespace Z80
             uint8_t memory[65536]; /* Random Access Memory */
             uint8_t* rom;          /* Read-Only Memory */
             uint rom_size;         /* Size of the ROM file */
+            uint8_t ports[256];    /* I/O ports */
 
             bool pins[40]; /* I/O pins */
 
@@ -811,9 +814,9 @@ namespace Z80
                 else
                     pc += 3;
                 break;
-            case 0xD3:
-                // TODO
-                break;
+            case 0xD3: /* out (*), a */
+                OUT(rom[pc+1], *A);
+                pc += 2;break;
             case 0xD4:
                 if(!(get_flag(0)))
                 {
@@ -847,8 +850,8 @@ namespace Z80
                     pc += 3;
                  break;
             case 0xDB: /* in a, (*) */
-                // TODO
-                break;
+                IN(*A, rom[pc+1]);
+                pc += 2; break;
             case 0xDC:
                 if(get_flag(0))
                 {
