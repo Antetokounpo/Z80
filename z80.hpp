@@ -106,6 +106,8 @@ namespace Z80
             uint8_t onescomp(uint8_t bin);
             uint twoscomp(uint8_t bin);
             bool parity_check(uint bin);
+
+            void interpret_extd();
     };
 
     bool Z80::load(const char* filename)
@@ -927,7 +929,7 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xED:
-                // TODO EXTD
+                interpret_extd(rom[++pc]); /* Incremente le Program Counter en fetchant */
                 break;
             case 0xEE:
                 XOR(rom[pc+1]);
@@ -1006,6 +1008,28 @@ namespace Z80
             default:
                 std::cout << std::hex << "Unrecognized instruction: " << (uint)opcode << std::endl;
                 exit(EXIT_FAILURE); break;
+        }
+    }
+
+    void Z80::interpret_extd(uint8_t opcode)
+    {
+        switch(opcode)
+        {
+            case 0x40: /* in b, (c) */
+                IN(*B, *C);
+                pc++; break;
+            case 0x41:
+                OUT(*C, *B);
+                pc++; break;
+            case 0x42:
+                SUB(HL.p, BC.p + get_flag(0));
+                pc++; break;
+            case 0x43:
+                LD(memory[rom[pc+1] << 8 | rom[pc+2]], BC.p);
+                pc += 3; break;
+            case 0x44:
+                *A = twoscomp(*A);
+                pc++; break;
         }
     }
 
