@@ -71,6 +71,10 @@ namespace Z80
 
             bool pins[40]; /* I/O pins */
 
+            /* Interrupt flip-flops */
+            bool iff1 = false;
+            bool iff2 = false;
+
             uint add(uint dst, uint src, size_t type);
             uint sub(uint dst, uint src, size_t type);
             void bitwise_and(uint src);
@@ -952,7 +956,8 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xF3: /* di */
-                // TODO
+                iff1 = false;
+                iff2 = false;
                 break;
             case 0xF4:
                 if(!get_flag(7))
@@ -985,7 +990,8 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xFB: /* ei */
-                // TODO
+                iff1 = true;
+                iff2 = true;
                 break;
             case 0xFC:
                 if(get_flag(7))
