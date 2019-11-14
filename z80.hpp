@@ -20,6 +20,7 @@
 #define PUSH(SRC) push(SRC)
 #define OUT(DST, SRC) ports[DST] = SRC
 #define IN(DST, SRC) DST = ports[SRC]
+#define SBC(DST, SRC) sub(DST, SRC + get_flag(0), sizeof(DST))
 
 namespace Z80
 {
@@ -74,6 +75,7 @@ namespace Z80
             /* Interrupt flip-flops */
             bool iff1 = false;
             bool iff2 = false;
+            uint interrupt_mode = 0;
 
             uint add(uint dst, uint src, size_t type);
             uint sub(uint dst, uint src, size_t type);
@@ -111,7 +113,7 @@ namespace Z80
             uint twoscomp(uint8_t bin);
             bool parity_check(uint bin);
 
-            void interpret_extd();
+            void interpret_extd(uint8_t opcode);
     };
 
     bool Z80::load(const char* filename)
@@ -1028,13 +1030,29 @@ namespace Z80
                 OUT(*C, *B);
                 pc++; break;
             case 0x42:
-                SUB(HL.p, BC.p + get_flag(0));
+                SBC(HL.p, BC.p);
                 pc++; break;
             case 0x43:
                 LD(memory[rom[pc+1] << 8 | rom[pc+2]], BC.p);
                 pc += 3; break;
             case 0x44:
                 *A = twoscomp(*A);
+                pc++; break;
+            case 0x45:
+                POP(pc);
+                iff1 = iff2;
+                break;
+            case 0x46:
+                interrupt_mode = 0;
+                pc++; break;
+            case 0x47:
+                LD(i, *A);
+                pc++; break;
+            case 0x48:
+                IN(*C, *C);
+                pc++; break;
+            case 0x49:
+                OUT(*C, *C);
                 pc++; break;
         }
     }
