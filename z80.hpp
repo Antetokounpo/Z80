@@ -21,6 +21,7 @@
 #define OUT(DST, SRC) ports[DST] = SRC
 #define IN(DST, SRC) DST = ports[SRC]
 #define SBC(DST, SRC) sub(DST, SRC + get_flag(0), sizeof(DST))
+#define ADC(DST, SRC) add(DST, SRC + get_flag(0), sizeof(DST))
 
 namespace Z80
 {
@@ -1054,6 +1055,80 @@ namespace Z80
             case 0x49:
                 OUT(*C, *C);
                 pc++; break;
+            case 0x4A:
+                ADC(HL.p, BC.p);
+                pc++; break;
+            case 0x4B:
+                LD(BC.p, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                pc += 3; break;
+            case 0x4D: /* reti */
+                // TODO
+                break;
+            case 0x4F:
+                LD(r, *A);
+                pc++; break;
+
+            case 0x50:
+                IN(*D, *C);
+                pc++; break;
+            case 0x51:
+                OUT(*C, *B);
+                pc++; break;
+            case 0x52:
+                SBC(HL.p, DE.p);
+                pc++; break;
+            case 0x53:
+                LD(memory[rom[pc+1] << 8 | rom[pc+2]], DE.p);
+                pc += 3; break;
+            case 0x55:
+                POP(pc);
+                iff1 = iff2;
+                break;
+            case 0x56:
+                interrupt_mode = 1;
+                pc++; break;
+            case 0x57:
+                LD(*A, i);
+                pc++; break;
+            case 0x58:
+                IN(*E, *C);
+                pc++; break;
+            case 0x59:
+                OUT(*C, *E);
+                pc++; break;
+            case 0x5A:
+                ADC(HL.p, DE.p);
+                pc++; break;
+            case 0x5B:
+                LD(DE.p, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                pc += 3; break;
+            case 0x5D:
+                POP(pc);
+                iff1 = iff2;
+                break;
+            case 0x5E:
+                interrupt_mode = 2;
+                pc++; break;
+            case 0x5F:
+                LD(*A, r);
+                pc++; break;
+
+            case 0x60:
+                IN(*H, *C);
+                pc++; break;
+            case 0x61:
+                OUT(*C, *H);
+                pc++; break;
+            case 0x62:
+                SBC(HL.p, HL.p);
+                pc++; break;
+            case 0x65:
+                POP(pc);
+                iff1 = iff2;
+                break;
+            case 0x66:
+                interrupt_mode = 0;
+                pc++; break;
         }
     }
 
@@ -1355,5 +1430,10 @@ namespace Z80
 #undef CP
 #undef POP
 #undef PUSH
+#undef PUSH
+#undef OUT
+#undef IN
+#undef SBC
+#undef ADC
 
 #endif
