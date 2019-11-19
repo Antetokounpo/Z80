@@ -1151,6 +1151,39 @@ namespace Z80
             case 0x6F:
                 rld();
                 pc++; break;
+
+            case 0x72:
+                SBC(HL.p, sp);
+                pc++; break;
+            case 0x73:
+                LD(memory[rom[pc+1] << 8 | rom[pc+2]], sp);
+                pc += 3; break;
+            case 0x75:
+                POP(pc);
+                iff1 = iff2;
+                break;
+            case 0x76:
+                interrupt_mode = 1;
+                pc++; break;
+            case 0x78:
+                IN(*A, *C);
+                pc++; break;
+            case 0x79:
+                OUT(*C, *A);
+                pc++; break;
+            case 0x7A:
+                ADC(HL.p, sp);
+                pc++; break;
+            case 0x7B:
+                LD(sp, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                pc += 3; break;
+            case 0x7D:
+                POP(pc);
+                iff1 = iff2;
+                break;
+            case 0x7E:
+                interrupt_mode = 2;
+                pc++; break;
         }
     }
 
