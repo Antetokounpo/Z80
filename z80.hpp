@@ -94,6 +94,7 @@ namespace Z80
             void daa();
             void rrd();
             void rld();
+            void ldi();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1184,6 +1185,10 @@ namespace Z80
             case 0x7E:
                 interrupt_mode = 2;
                 pc++; break;
+
+            case 0xA0:
+                ldi();
+                pc++; break;
         }
     }
 
@@ -1439,6 +1444,18 @@ namespace Z80
         set_POF(parity_check(*A));
         set_NF(false);
         /* Carry flag is not affected */
+    }
+
+    void Z80::ldi()
+    {
+        LD(memory[DE.p], memory[HL.p]);
+        DE.p++;
+        HL.p++;
+        BC.p--;
+
+        set_HF(false);
+        set_POF(BC.p - 1 != 0);
+        set_NF(false);
     }
 
     void Z80::pop(uint16_t* dst)
