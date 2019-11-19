@@ -93,6 +93,7 @@ namespace Z80
             void cpl();
             void daa();
             void rrd();
+            void rld();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1147,6 +1148,9 @@ namespace Z80
                 POP(pc);
                 iff1 = iff2;
                 break;
+            case 0x6F:
+                rld();
+                pc++; break;
         }
     }
 
@@ -1378,6 +1382,23 @@ namespace Z80
 
         *A = (*A & 0xF0) | (memory[HL.p] & 0x0F);
         memory[HL.p] = (memory[HL.p] >> 4) | (low_nibble << 4);
+
+        set_SF(twoscomp(*A) > 255);
+        set_ZF(*A == 0);
+        set_HF(false);
+        set_POF(parity_check(*A));
+        set_NF(false);
+        /* Carry flag is not affected */
+    }
+
+    void Z80::rld()
+    {
+        uint8_t high_nibble = memory[HL.p] >> 4;
+        uint8_t low_nibble = *A & 0x0F;
+
+        memory[HL.p] = (memory[HL.p] & 0x0F) | ((memory[HL.p] & 0x0F) << 4);
+        *A = (*A & 0xF0) | high_nibble;
+        memory[HL.p] = (memory[HL.p] & 0xF0) | low_nibble;
 
         set_SF(twoscomp(*A) > 255);
         set_ZF(*A == 0);
