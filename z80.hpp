@@ -1132,7 +1132,21 @@ namespace Z80
                 interrupt_mode = 0;
                 pc++; break;
             case 0x67: /* rrd */
-
+                rrd();
+                pc++; break;
+            case 0x68:
+                IN(*L, *C);
+                pc++; break;
+            case 0x69:
+                OUT(*C, *L);
+                pc++; break;
+            case 0x6A:
+                ADC(HL.p, HL.p);
+                pc++; break;
+            case 0x6D:
+                POP(pc);
+                iff1 = iff2;
+                break;
         }
     }
 
