@@ -92,6 +92,7 @@ namespace Z80
             void djnz(int value);
             void cpl();
             void daa();
+            void rrd();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1062,7 +1063,8 @@ namespace Z80
                 LD(BC.p, memory[rom[pc+1] << 8 | rom[pc+2]]);
                 pc += 3; break;
             case 0x4D: /* reti */
-                // TODO
+                POP(pc);
+                // Signals I/O device TODO
                 break;
             case 0x4F:
                 LD(r, *A);
@@ -1129,6 +1131,8 @@ namespace Z80
             case 0x66:
                 interrupt_mode = 0;
                 pc++; break;
+            case 0x67: /* rrd */
+
         }
     }
 
@@ -1352,6 +1356,21 @@ namespace Z80
             set_CF(true);
         }else
             set_CF(false);
+    }
+
+    void Z80::rrd()
+    {
+        uint8_t low_nibble = *A & 0xF;
+
+        *A = (*A & 0xF0) | (memory[HL.p] & 0x0F);
+        memory[HL.p] = (memory[HL.p] >> 4) | (low_nibble << 4);
+
+        set_SF(twoscomp(*A) > 255);
+        set_ZF(*A == 0);
+        set_HF(false);
+        set_POF(parity_check(*A));
+        set_NF(false);
+        /* Carry flag is not affected */
     }
 
     void Z80::pop(uint16_t* dst)
