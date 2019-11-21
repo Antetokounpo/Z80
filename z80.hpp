@@ -101,6 +101,7 @@ namespace Z80
             void ldd();
             void cpd();
             void ind();
+            void outd();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1213,6 +1214,9 @@ namespace Z80
             case 0xAA:
                 ind();
                 pc++; break;
+            case 0xAB:
+                outd();
+                pc++; break;
         }
     }
 
@@ -1555,6 +1559,17 @@ namespace Z80
         set_NF(true);
 
         *B++;
+        HL.p--;
+    }
+
+    void Z80::outd()
+    {
+        ports[*C] = memory[HL.p];
+
+        set_ZF(*B - 1 == 0);
+        set_NF(true);
+
+        *B--;
         HL.p--;
     }
 
