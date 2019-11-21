@@ -97,6 +97,7 @@ namespace Z80
             void ldi();
             void cpi();
             void ini();
+            void outi();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1197,6 +1198,9 @@ namespace Z80
             case 0xA2:
                 ini();
                 pc++; break;
+            case 0xA3:
+                outi();
+                pc++; break;
         }
     }
 
@@ -1484,6 +1488,17 @@ namespace Z80
     void Z80::ini()
     {
         memory[HL.p] = ports[*C];
+
+        set_ZF(*B - 1 == 0);
+        set_NF(true);
+
+        *B--;
+        HL.p++;
+    }
+
+    void Z80::outi()
+    {
+        ports[*C] = memory[HL.p];
 
         set_ZF(*B - 1 == 0);
         set_NF(true);
