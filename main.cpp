@@ -6,7 +6,7 @@ int main()
 {
     Z80::Z80 cpu;
 
-    cpu.load("test.asm");
+    cpu.load("ti83plus.rom");
     while(true)
     {
         cpu.step();

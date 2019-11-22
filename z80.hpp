@@ -295,6 +295,7 @@ namespace Z80
                 break;
             case 0x28: /* jr z, * */
                 if(*F & 0x40) pc += (int)rom[pc+1];
+                else pc += 2;
                 break;
             case 0x29: /* add hl, hl */
                 ADD(HL.p, HL.p);
@@ -1438,6 +1439,8 @@ namespace Z80
         DEC(*B);
         if(*B != 0)
             pc += value;
+        else
+            pc += 2;
     }
 
     void Z80::cpl()
