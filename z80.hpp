@@ -102,6 +102,8 @@ namespace Z80
             void cpd();
             void ind();
             void outd();
+            void ldir();
+            void cpir();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1217,6 +1219,15 @@ namespace Z80
             case 0xAB:
                 outd();
                 pc++; break;
+
+            case 0xB0:
+                ldir();
+                pc++; break;
+            case 0xB1:
+                cpir();
+                pc++; break;
+            case 0xB2:
+
         }
     }
 
@@ -1489,10 +1500,10 @@ namespace Z80
     void Z80::cpi()
     {
         uint result = *A - memory[HL.p];
-        uint half_result = (*A&0x0F) - (HL.p&0x0F);
+        uint half_result = (*A&0x0F) - (memory[HL.p]&0x0F);
 
-        set_SF(twoscomp(result) > 255);
-        set_ZF(result == 0);
+        set_SF(twoscomp(result&0xFF) > 255);
+        set_ZF(result&0xFF == 0);
         set_HF(half_result&0x10);
         set_POF(BC.p - 1 != 0);
         set_NF(true);
@@ -1571,6 +1582,22 @@ namespace Z80
 
         *B--;
         HL.p--;
+    }
+
+    void Z80::ldir()
+    {
+        do
+        {
+            ldi();
+        }while(BC.p != 0);
+    }
+
+    void Z80::cpir()
+    {
+        do
+        {
+            cpi();
+        }while(BC.p != 0 || *A != memory[HL.p]);
     }
 
     void Z80::pop(uint16_t* dst)
