@@ -107,6 +107,9 @@ namespace Z80
             void inir();
             void otir();
             void lddr();
+            void cpdr();
+            void indr();
+            void otdr();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1238,6 +1241,15 @@ namespace Z80
             case 0xB8:
                 lddr();
                 pc++; break;
+            case 0xB9:
+                cpdr();
+                pc++; break;
+            case 0xBA:
+                indr();
+                pc++; break;
+            case 0xBB:
+                otdr();
+                pc++; break;
         }
     }
 
@@ -1632,6 +1644,31 @@ namespace Z80
         {
             ldd();
         }while(BC.p != 0);
+    }
+
+    void Z80::cpdr()
+    {
+        do
+        {
+            cpd();
+        } while(BC.p != 0 || *A != memory[HL.p]);
+        /* La documentation n'est pas claire, on ne sait pas si c'est un or ou un and pour la condition */
+    }
+
+    void Z80::indr()
+    {
+        do
+        {
+            ind();
+        } while(*B != 0);
+    }
+
+    void Z80::otdr()
+    {
+        do
+        {
+            outd();
+        } while(*B != 0);
     }
 
     void Z80::pop(uint16_t* dst)
