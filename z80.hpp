@@ -104,6 +104,7 @@ namespace Z80
             void outd();
             void ldir();
             void cpir();
+            void inir();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1598,6 +1599,14 @@ namespace Z80
         {
             cpi();
         }while(BC.p != 0 || *A != memory[HL.p]);
+    }
+
+    void Z80::inir()
+    {
+        do
+        {
+            ini();
+        } while(*B != 0);
     }
 
     void Z80::pop(uint16_t* dst)
