@@ -105,6 +105,8 @@ namespace Z80
             void ldir();
             void cpir();
             void inir();
+            void otir();
+            void lddr();
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1228,7 +1230,14 @@ namespace Z80
                 cpir();
                 pc++; break;
             case 0xB2:
-
+                inir();
+                pc++; break;
+            case 0xB3:
+                otir();
+                pc++; break;
+            case 0xB8:
+                lddr();
+                pc++; break;
         }
     }
 
@@ -1607,6 +1616,22 @@ namespace Z80
         {
             ini();
         } while(*B != 0);
+    }
+
+    void Z80::otir()
+    {
+        do
+        {
+            outd();
+        } while(*B != 0);
+    }
+
+    void Z80::lddr()
+    {
+        do
+        {
+            ldd();
+        }while(BC.p != 0);
     }
 
     void Z80::pop(uint16_t* dst)
