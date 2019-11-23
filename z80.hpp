@@ -45,9 +45,9 @@ namespace Z80
         protected:
             /* Main registers */
             Register AF; uint8_t* A = &(AF.r[0]); uint8_t* F = &(AF.r[1]); /* Bit 	7 	6 	5 	4 	3 	2 	1 	0 */
-            Register BC; uint8_t* B = &(AF.r[0]); uint8_t* C = &(AF.r[1]); /* Flag 	S 	Z 	F5 	H 	F3 	P/V N 	C */
-            Register DE; uint8_t* D = &(AF.r[0]); uint8_t* E = &(AF.r[1]);
-            Register HL; uint8_t* H = &(AF.r[0]); uint8_t* L = &(AF.r[1]);
+            Register BC; uint8_t* B = &(BC.r[0]); uint8_t* C = &(BC.r[1]); /* Flag 	S 	Z 	F5 	H 	F3 	P/V N 	C */
+            Register DE; uint8_t* D = &(DE.r[0]); uint8_t* E = &(DE.r[1]);
+            Register HL; uint8_t* H = &(HL.r[0]); uint8_t* L = &(HL.r[1]);
 
             /* Alternate registers */
             Register AF_;
