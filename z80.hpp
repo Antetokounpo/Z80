@@ -112,6 +112,7 @@ namespace Z80
             void otdr();
 
             void rlc(uint8_t* r);
+            void rrc(uint8_t* r);
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1681,6 +1682,19 @@ namespace Z80
         uint8_t msb = *r & 0x80;
         *r = (*r << 1) | (msb >> 7);
         set_CF(msb >> 7);
+
+        set_SF(twoscomp(*r) > 255);
+        set_ZF(*r == 0);
+        set_HF(false);
+        set_POF(parity_check(*r));
+        set_NF(false);
+    }
+
+    void Z80::rrc(uint8_t* r)
+    {
+        uint8_t lsb = 0x01 & *r;
+        *r = (*r >> 1) | (lsb << 7);
+        set_CF(lsb);
 
         set_SF(twoscomp(*r) > 255);
         set_ZF(*r == 0);
