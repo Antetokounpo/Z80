@@ -113,6 +113,11 @@ namespace Z80
 
             void rlc(uint8_t* r);
             void rrc(uint8_t* r);
+            void rl(uint8_t* r);
+            void rr(uint8_t* r);
+            void sla(uint8_t* r);
+            void sra(uint8_t* r);
+            void srl(uint8_t* r);
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1682,9 +1687,21 @@ namespace Z80
 
     void Z80::rlc(uint8_t* r)
     {
+        set_CF(*r & 0x80);
+        rl(r);
+    }
+
+    void Z80::rrc(uint8_t* r)
+    {
+        set_CF(0x01 & *r);
+        rr(r);
+    }
+
+    void Z80::rl(uint8_t* r)
+    {
         uint8_t msb = *r & 0x80;
-        *r = (*r << 1) | (msb >> 7);
-        set_CF(msb >> 7);
+        *r = (*r << 1) | (get_flag(0));
+        set_CF(msb);
 
         set_SF(twoscomp(*r) > 255);
         set_ZF(*r == 0);
@@ -1693,10 +1710,10 @@ namespace Z80
         set_NF(false);
     }
 
-    void Z80::rrc(uint8_t* r)
+    void Z80::rr(uint8_t* r)
     {
         uint8_t lsb = 0x01 & *r;
-        *r = (*r >> 1) | (lsb << 7);
+        *r = (*r >> 1) | (get_flag(0) << 7);
         set_CF(lsb);
 
         set_SF(twoscomp(*r) > 255);
@@ -1704,6 +1721,24 @@ namespace Z80
         set_HF(false);
         set_POF(parity_check(*r));
         set_NF(false);
+    }
+
+    void Z80::sla(uint8_t* r)
+    {
+        set_CF(0);
+        rl(r);
+    }
+
+    void Z80::sra(uint8_t* r)
+    {
+        set_CF(1);
+        rr(r);
+    }
+
+    void Z80::srl(uint8_t* r)
+    {
+        set_CF(0);
+        rr(r);
     }
 
     void Z80::pop(uint16_t* dst)
