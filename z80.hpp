@@ -119,6 +119,10 @@ namespace Z80
             void sra(uint8_t* r);
             void srl(uint8_t* r);
 
+            void bit(uint8_t b, uint8_t* r);
+            void res(uint8_t b, uint8_t* r);
+            void set(uint8_t b, uint8_t *r);
+
             void pop(uint16_t* dst);
             void push(uint16_t src);
 
@@ -141,6 +145,7 @@ namespace Z80
             bool parity_check(uint bin);
 
             void interpret_extd(uint8_t opcode);
+            void interpret_bits(uint8_t opcode);
     };
 
     bool Z80::load(const char* filename)
@@ -1262,6 +1267,11 @@ namespace Z80
         }
     }
 
+    void Z80::interpret_bits(uint8_t opcode)
+    {
+        uint8_t** registers;
+    }
+
     void Z80::step()
     {
         uint8_t opcode;
@@ -1739,6 +1749,23 @@ namespace Z80
     {
         set_CF(0);
         rr(r);
+    }
+
+    void Z80::bit(uint8_t b, uint8_t* r)
+    {
+        set_ZF(*r & (0x1 << *r));
+        set_HF(true);
+        set_NF(false);
+    }
+
+    void Z80::res(uint8_t b, uint8_t* r)
+    {
+        *r &= !(0x1 << b);
+    }
+
+    void Z80::set(uint8_t b, uint8_t* r)
+    {
+        *r |= (0x1 << b);
     }
 
     void Z80::pop(uint16_t* dst)
