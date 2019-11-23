@@ -1412,6 +1412,9 @@ namespace Z80
         uint8_t msb = *A & 0x80;
         *A = (*A << 1) | (msb >> 7);
         set_CF(bool(msb >> 7));
+
+        set_HF(false);
+        set_NF(false);
     }
 
     void Z80::rla()
