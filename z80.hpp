@@ -821,7 +821,7 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xCB:
-                // TODO BITS
+                interpret_bits(rom[++pc]);
                 break;
             case 0xCC:
                 if(get_flag(6))
@@ -1269,7 +1269,52 @@ namespace Z80
 
     void Z80::interpret_bits(uint8_t opcode)
     {
-        uint8_t** registers;
+        uint8_t* registers[] = {B, C, D, E, H, L, &(memory[HL.p]), A};
+
+        uint8_t high_nibble = opcode >> 4;
+        uint8_t low_nibble = opcode & 0xF;
+
+        switch(high_nibble)
+        {
+            case 0x0:
+                if (low_nibble < 0x8) rlc(registers[low_nibble]);
+                else rrc(registers[low_nibble - 0x8]);
+                break;
+            case 0x1:
+                if (low_nibble < 0x8) rl(registers[low_nibble]);
+                else rr(registers[low_nibble - 0x8]);
+                break;
+            case 0x2:
+                if (low_nibble < 0x8) sla(registers[low_nibble]);
+                else sra(registers[low_nibble - 0x8]);
+                break;
+            case 0x3:
+                srl(registers[low_nibble - 0x8]);
+                break;
+            case 0x4:
+            case 0x5:
+            case 0x6:
+            case 0x7:
+                if (low_nibble < 0x8) bit(high_nibble * 2 - 8, registers[low_nibble]);
+                else bit(high_nibble * 2 - 7, registers[low_nibble - 0x8]);
+                break;
+            case 0x8:
+            case 0x9:
+            case 0xA:
+            case 0xB:
+                if (low_nibble < 0x8) res(high_nibble - 8, registers[low_nibble]);
+                else res(high_nibble - 7, registers[low_nibble - 0x8]);
+                break;
+            case 0xC:
+            case 0xD:
+            case 0xE:
+            case 0xF:
+                if (low_nibble < 0x8) set(high_nibble * 2 - 24, registers[low_nibble]);
+                else set(high_nibble * 2 - 23, registers[low_nibble - 0x8]);
+                break;
+
+            pc++;
+        }
     }
 
     void Z80::step()
