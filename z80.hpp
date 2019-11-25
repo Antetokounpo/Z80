@@ -1594,7 +1594,7 @@ namespace Z80
         uint half_result = (*A&0x0F) - (memory[HL.p]&0x0F);
 
         set_SF(twoscomp(result&0xFF) > 255);
-        set_ZF(result&0xFF == 0);
+        set_ZF((result&0xFF) == 0);
         set_HF(half_result&0x10);
         set_POF(BC.p - 1 != 0);
         set_NF(true);
@@ -1610,7 +1610,7 @@ namespace Z80
         set_ZF(*B - 1 == 0);
         set_NF(true);
 
-        *B--;
+        (*B)--;
         HL.p++;
     }
 
@@ -1621,7 +1621,7 @@ namespace Z80
         set_ZF(*B - 1 == 0);
         set_NF(true);
 
-        *B--;
+        (*B)--;
         HL.p++;
     }
 
@@ -1660,7 +1660,7 @@ namespace Z80
         set_ZF(*B - 1 == 0);
         set_NF(true);
 
-        *B++;
+        (*B)++;
         HL.p--;
     }
 
@@ -1671,7 +1671,7 @@ namespace Z80
         set_ZF(*B - 1 == 0);
         set_NF(true);
 
-        *B--;
+        (*B)--;
         HL.p--;
     }
 
@@ -1805,7 +1805,7 @@ namespace Z80
 
     void Z80::res(uint8_t b, uint8_t* m)
     {
-        *m &= !(0x1 << b);
+        *m &= ~(0x1 << b);
     }
 
     void Z80::set(uint8_t b, uint8_t* m)
