@@ -187,7 +187,7 @@ namespace Z80
             case 0x00: /* nop */
                 pc++; break;
             case 0x01: /* ld bc, ** */
-                LD(BC.p, rom[pc+1] << 8 | rom[pc+2]);
+                LD(BC.p, get_operand(2));
                 pc += 3; break;
             case 0x02: /* ld (bc), a */
                 LD(memory[BC.p], *A);
@@ -203,7 +203,7 @@ namespace Z80
                 set_ZF(*B == 0);
                 pc++; break;
             case 0x06: /* ld b, * */
-                LD(*B, rom[pc+1]);
+                LD(*B, get_operand(1));
                 pc += 2; break;
             case 0x07: /* rlca */
                 rlca();
@@ -227,17 +227,17 @@ namespace Z80
                 DEC(*C);
                 pc++; break;
             case 0x0E: /* ld c, * */
-                LD(*C, rom[pc+1]);
+                LD(*C, get_operand(1));
                 pc += 2; break;
             case 0x0F: /* rrca */
                 rrca();
                 pc++; break;
             
             case 0x10: /* djnz */
-                djnz((int)rom[pc+1]);
+                djnz((int)get_operand(1));
                 break;
             case 0x11: /* ld de, ** */
-                LD(DE.r[0], rom[pc+1]);
+                LD(DE.r[0], get_operand(1));
                 LD(DE.r[1], rom[pc+2]);
                 pc += 3; break;
             case 0x12: /* ld (de), a */
@@ -253,13 +253,13 @@ namespace Z80
                 DEC(*D);
                 pc++; break;
             case 0x16: /* ld d, * */
-                LD(*D, rom[pc+1]);
+                LD(*D, get_operand(1));
                 pc += 2; break;
             case 0x17: /* rla */
                 rla();
                 pc++; break;
             case 0x18: /* jr * */
-                pc += (int)rom[pc+1]; break;
+                pc += (int)get_operand(1); break;
             case 0x19: /* add hl, de */
                 ADD(HL.p, DE.p);
                 pc++; break;
@@ -276,17 +276,17 @@ namespace Z80
                 DEC(*E);
                 pc++; break;
             case 0x1E: /* ld e, * */
-                LD(*E, rom[pc+1]);
+                LD(*E, get_operand(1));
                 pc += 2; break;
             case 0x1F: /* rra */
                 rra();
                 pc++; break;
             
             case 0x20: /* jr nz, * */
-                if(!(*F & 0x40)) pc += (int)rom[pc+1];
+                if(!(*F & 0x40)) pc += (int)get_operand(1);
                 break;
             case 0x21: /* ld hl, ** */
-                LD(HL.r[0], rom[pc+1]);
+                LD(HL.r[0], get_operand(1));
                 LD(HL.r[1], rom[pc+2]);
                 pc += 3; break;
             case 0x22: /* ld (**), hl */
@@ -303,13 +303,13 @@ namespace Z80
                 DEC(HL.r[0]);
                 pc++; break;
             case 0x26: /* ld h, * */
-                LD(HL.r[0], rom[pc+1]);
+                LD(HL.r[0], get_operand(1));
                 pc += 2; break;
             case 0x27: /* daa */
                 daa();
                 break;
             case 0x28: /* jr z, * */
-                if(*F & 0x40) pc += (int)rom[pc+1];
+                if(*F & 0x40) pc += (int)get_operand(1);
                 else pc += 2;
                 break;
             case 0x29: /* add hl, hl */
@@ -329,20 +329,20 @@ namespace Z80
                 DEC(*L);
                 pc++; break;
             case 0x2E: /* ld l, * */
-                LD(*L, rom[pc+1]);
+                LD(*L, get_operand(1));
                 pc += 2; break;
             case 0x2F: /* cpl */
                 cpl();
                 pc++; break;
             
             case 0x30: /* jr nc, * */
-                if(!((*F & 0x1))) pc += (int)rom[pc+1];
+                if(!((*F & 0x1))) pc += (int)get_operand(1);
                 pc += 2; break;
             case 0x31: /* ld sp, ** */
-                LD(sp, rom[pc+1] << 8 | rom[pc+2]);
+                LD(sp, get_operand(2));
                 pc += 3; break;
             case 0x32: /* ld (**), a */
-                LD(memory[rom[pc+1] << 8 | rom[pc+2]], *A);
+                LD(memory[get_operand(2)], *A);
                 pc += 3; break;
             case 0x33:
                 INC(sp);
@@ -354,19 +354,19 @@ namespace Z80
                 DEC(memory[HL.p]);
                 pc++; break;
             case 0x36:
-                LD(memory[HL.p], rom[pc+1]);
+                LD(memory[HL.p], get_operand(1));
                 pc += 2; break;
             case 0x37: /* scf */
                 set_CF(true);
                 pc++; break;
             case 0x38: /* jr c, * */
-                if(*F & 0x1) pc += (int)rom[pc+1];
+                if(*F & 0x1) pc += (int)get_operand(1);
                 pc += 2; break;
             case 0x39:
                 ADD(HL.p, sp);
                 pc++; break;
             case 0x3A:
-                LD(*A, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                LD(*A, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x3B:
                 DEC(sp);
@@ -378,7 +378,7 @@ namespace Z80
                 DEC(*A);
                 pc++; break;
             case 0x3E:
-                LD(*A, rom[pc+1]);
+                LD(*A, get_operand(1));
                 pc += 2; break;
             case 0x3F: /* ccf */
                 set_CF(!(*F & 0x1));
@@ -785,18 +785,18 @@ namespace Z80
                 pc++; break;
             case 0xC2:
                 if(!(get_flag(6)))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 else
                     pc += 3;
                 break;
             case 0xC3:
-                pc = rom[pc+1] << 8 | rom[pc+2];
+                pc = get_operand(2);
                 break;
             case 0xC4:
                 if(!(get_flag(6)))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -804,7 +804,7 @@ namespace Z80
                 PUSH(BC.p);
                 pc++; break;
             case 0xC6:
-                ADD(*A, rom[pc+1]);
+                ADD(*A, get_operand(1));
                 pc += 2; break;
             case 0xC7:
                 PUSH(pc+1);
@@ -818,7 +818,7 @@ namespace Z80
                 break;
             case 0xCA:
                 if(get_flag(6))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 else
                     pc += 3;
                 break;
@@ -829,16 +829,16 @@ namespace Z80
                 if(get_flag(6))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
             case 0xCD:
                 PUSH(pc+3);
-                pc = rom[pc+1] << 8 | rom[pc+2];
+                pc = get_operand(2);
                 break;
             case 0xCE:
-                ADD(*A, rom[pc+1] + get_flag(0));
+                ADD(*A, get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xCF:
                 PUSH(pc+1);
@@ -853,18 +853,18 @@ namespace Z80
                 pc++; break;
             case 0xD2:
                 if(!(get_flag(0)))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 else
                     pc += 3;
                 break;
             case 0xD3: /* out (*), a */
-                OUT(rom[pc+1], *A);
+                OUT(get_operand(1), *A);
                 pc += 2;break;
             case 0xD4:
                 if(!(get_flag(0)))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -872,7 +872,7 @@ namespace Z80
                 PUSH(DE.p);
                 pc++; break;
             case 0xD6:
-                SUB(rom[pc+1]);
+                SUB(get_operand(1));
                 pc += 2; break;
             case 0xD7:
                 PUSH(pc+1);
@@ -888,18 +888,18 @@ namespace Z80
                 pc++; break;
             case 0xDA:
                 if(get_flag(0))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                  else
                     pc += 3;
                  break;
             case 0xDB: /* in a, (*) */
-                IN(*A, rom[pc+1]);
+                IN(*A, get_operand(1));
                 pc += 2; break;
             case 0xDC:
                 if(get_flag(0))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -907,7 +907,7 @@ namespace Z80
                 // TODO
                 break;
             case 0xDE:
-                SUB(rom[pc+1] + get_flag(0));
+                SUB(get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xDF:
                 PUSH(pc+1);
@@ -922,7 +922,7 @@ namespace Z80
                 pc++; break;
             case 0xE2:
                 if(!get_flag(2))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 else
                     pc += 3;
                 break;
@@ -934,7 +934,7 @@ namespace Z80
                 if(!get_flag(2))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -942,7 +942,7 @@ namespace Z80
                 PUSH(HL.p);
                 pc++; break;
             case 0xE6:
-                AND(rom[pc+1]);
+                AND(get_operand(1));
                 pc += 2; break;
             case 0xE7:
                 PUSH(pc+1);
@@ -956,7 +956,7 @@ namespace Z80
                  break;
             case 0xEA:
                 if(get_flag(2))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 break;
             case 0xEB:
                 swap(&(DE.p), &(HL.p));
@@ -965,7 +965,7 @@ namespace Z80
                 if(get_flag(2))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -973,7 +973,7 @@ namespace Z80
                 interpret_extd(rom[++pc]); /* Incremente le Program Counter en fetchant */
                 break;
             case 0xEE:
-                XOR(rom[pc+1]);
+                XOR(get_operand(1));
                 pc += 2; break;
             case 0xEF:
                 PUSH(pc+1);
@@ -988,7 +988,7 @@ namespace Z80
                 pc++; break;
             case 0xF2:
                 if(!get_flag(7))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 else
                     pc += 3;
                 break;
@@ -1000,7 +1000,7 @@ namespace Z80
                 if(!get_flag(7))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -1008,7 +1008,7 @@ namespace Z80
                 PUSH(AF.p);
                 pc++; break;
             case 0xF6:
-                OR(rom[pc+1]);
+                OR(get_operand(1));
                 pc += 2; break;
             case 0xF7:
                 PUSH(pc+1);
@@ -1022,7 +1022,7 @@ namespace Z80
                 pc++; break;
             case 0xFA:
                 if(get_flag(7))
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 else
                     pc += 3;
                 break;
@@ -1034,7 +1034,7 @@ namespace Z80
                 if(get_flag(7))
                 {
                     PUSH(pc+3);
-                    pc = rom[pc+1] << 8 | rom[pc+2];
+                    pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
@@ -1042,7 +1042,7 @@ namespace Z80
                 // TODO IY
                 break;
             case 0xFE:
-                CP(rom[pc+1]);
+                CP(get_operand(1));
                 pc += 2; break;
             case 0xFF:
                 PUSH(pc+1);
@@ -1068,7 +1068,7 @@ namespace Z80
                 SBC(HL.p, BC.p);
                 pc++; break;
             case 0x43:
-                LD(memory[rom[pc+1] << 8 | rom[pc+2]], BC.p);
+                LD(memory[get_operand(2)], BC.p);
                 pc += 3; break;
             case 0x44:
                 *A = twoscomp(*A);
@@ -1093,7 +1093,7 @@ namespace Z80
                 ADC(HL.p, BC.p);
                 pc++; break;
             case 0x4B:
-                LD(BC.p, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                LD(BC.p, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x4D: /* reti */
                 POP(pc);
@@ -1113,7 +1113,7 @@ namespace Z80
                 SBC(HL.p, DE.p);
                 pc++; break;
             case 0x53:
-                LD(memory[rom[pc+1] << 8 | rom[pc+2]], DE.p);
+                LD(memory[get_operand(2)], DE.p);
                 pc += 3; break;
             case 0x55:
                 POP(pc);
@@ -1135,7 +1135,7 @@ namespace Z80
                 ADC(HL.p, DE.p);
                 pc++; break;
             case 0x5B:
-                LD(DE.p, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                LD(DE.p, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x5D:
                 POP(pc);
@@ -1188,7 +1188,7 @@ namespace Z80
                 SBC(HL.p, sp);
                 pc++; break;
             case 0x73:
-                LD(memory[rom[pc+1] << 8 | rom[pc+2]], sp);
+                LD(memory[get_operand(2)], sp);
                 pc += 3; break;
             case 0x75:
                 POP(pc);
@@ -1207,7 +1207,7 @@ namespace Z80
                 ADC(HL.p, sp);
                 pc++; break;
             case 0x7B:
-                LD(sp, memory[rom[pc+1] << 8 | rom[pc+2]]);
+                LD(sp, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x7D:
                 POP(pc);
