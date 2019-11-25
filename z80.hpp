@@ -143,9 +143,11 @@ namespace Z80
             uint8_t onescomp(uint8_t bin);
             uint twoscomp(uint8_t bin);
             bool parity_check(uint bin);
+            uint16_t get_operand(uint offset);
 
             void interpret_extd(uint8_t opcode);
             void interpret_bits(uint8_t opcode);
+            void interpret_ix(uint8_t opcode);
     };
 
     bool Z80::load(const char* filename)
@@ -1465,6 +1467,13 @@ namespace Z80
         }
 
         return !(c % 2);
+    }
+
+    uint16_t Z80::get_operand(uint offset)
+    {
+        if (offset == 1)
+            return rom[pc+1];
+        return rom[pc+1] << 8 | rom[pc+2];
     }
 
     void Z80::rlca()
