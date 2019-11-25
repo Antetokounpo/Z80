@@ -111,17 +111,17 @@ namespace Z80
             void indr();
             void otdr();
 
-            void rlc(uint8_t* r);
-            void rrc(uint8_t* r);
-            void rl(uint8_t* r);
-            void rr(uint8_t* r);
-            void sla(uint8_t* r);
-            void sra(uint8_t* r);
-            void srl(uint8_t* r);
+            void rlc(uint8_t* m);
+            void rrc(uint8_t* m);
+            void rl(uint8_t* m);
+            void rr(uint8_t* m);
+            void sla(uint8_t* m);
+            void sra(uint8_t* m);
+            void srl(uint8_t* m);
 
-            void bit(uint8_t b, uint8_t* r);
-            void res(uint8_t b, uint8_t* r);
-            void set(uint8_t b, uint8_t *r);
+            void bit(uint8_t b, uint8_t* m);
+            void res(uint8_t b, uint8_t* m);
+            void set(uint8_t b, uint8_t *m);
 
             void pop(uint16_t* dst);
             void push(uint16_t src);
@@ -1740,77 +1740,77 @@ namespace Z80
         } while(*B != 0);
     }
 
-    void Z80::rlc(uint8_t* r)
+    void Z80::rlc(uint8_t* m)
     {
-        set_CF(*r & 0x80);
-        rl(r);
+        set_CF(*m & 0x80);
+        rl(m);
     }
 
-    void Z80::rrc(uint8_t* r)
+    void Z80::rrc(uint8_t* m)
     {
-        set_CF(0x01 & *r);
-        rr(r);
+        set_CF(0x01 & *m);
+        rr(m);
     }
 
-    void Z80::rl(uint8_t* r)
+    void Z80::rl(uint8_t* m)
     {
-        uint8_t msb = *r & 0x80;
-        *r = (*r << 1) | (get_flag(0));
+        uint8_t msb = *m & 0x80;
+        *m = (*m << 1) | (get_flag(0));
         set_CF(msb);
 
-        set_SF(twoscomp(*r) > 255);
-        set_ZF(*r == 0);
+        set_SF(twoscomp(*m) > 255);
+        set_ZF(*m == 0);
         set_HF(false);
-        set_POF(parity_check(*r));
+        set_POF(parity_check(*m));
         set_NF(false);
     }
 
-    void Z80::rr(uint8_t* r)
+    void Z80::rr(uint8_t* m)
     {
-        uint8_t lsb = 0x01 & *r;
-        *r = (*r >> 1) | (get_flag(0) << 7);
+        uint8_t lsb = 0x01 & *m;
+        *m = (*m >> 1) | (get_flag(0) << 7);
         set_CF(lsb);
 
-        set_SF(twoscomp(*r) > 255);
-        set_ZF(*r == 0);
+        set_SF(twoscomp(*m) > 255);
+        set_ZF(*m == 0);
         set_HF(false);
-        set_POF(parity_check(*r));
+        set_POF(parity_check(*m));
         set_NF(false);
     }
 
-    void Z80::sla(uint8_t* r)
+    void Z80::sla(uint8_t* m)
     {
         set_CF(0);
-        rl(r);
+        rl(m);
     }
 
-    void Z80::sra(uint8_t* r)
+    void Z80::sra(uint8_t* m)
     {
         set_CF(1);
-        rr(r);
+        rr(m);
     }
 
-    void Z80::srl(uint8_t* r)
+    void Z80::srl(uint8_t* m)
     {
         set_CF(0);
-        rr(r);
+        rr(m);
     }
 
-    void Z80::bit(uint8_t b, uint8_t* r)
+    void Z80::bit(uint8_t b, uint8_t* m)
     {
-        set_ZF(*r & (0x1 << *r));
+        set_ZF(*m & (0x1 << *m));
         set_HF(true);
         set_NF(false);
     }
 
-    void Z80::res(uint8_t b, uint8_t* r)
+    void Z80::res(uint8_t b, uint8_t* m)
     {
-        *r &= !(0x1 << b);
+        *m &= !(0x1 << b);
     }
 
-    void Z80::set(uint8_t b, uint8_t* r)
+    void Z80::set(uint8_t b, uint8_t* m)
     {
-        *r |= (0x1 << b);
+        *m |= (0x1 << b);
     }
 
     void Z80::pop(uint16_t* dst)
