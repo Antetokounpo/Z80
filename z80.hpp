@@ -824,7 +824,7 @@ namespace Z80
                 break;
             case 0xCB:
                 interpret_bits(rom[++pc]);
-                break;
+                pc++; break;
             case 0xCC:
                 if(get_flag(6))
                 {
@@ -904,7 +904,7 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xDD:
-                // TODO
+                interpret_ix(rom[++pc]);
                 break;
             case 0xDE:
                 SUB(get_operand(1) + get_flag(0));
@@ -1314,8 +1314,128 @@ namespace Z80
                 if (low_nibble < 0x8) set(high_nibble * 2 - 24, registers[low_nibble]);
                 else set(high_nibble * 2 - 23, registers[low_nibble - 0x8]);
                 break;
+        }
+    }
 
-            pc++;
+    void Z80::interpret_ix(uint8_t opcode)
+    {
+        uint8_t* registers[] = {B, C, D, E, H, L};
+        uint8_t low_nibble = opcode & 0xF;
+        uint8_t* ixx = &(memory[ix+get_operand(1)]);
+
+        switch(opcode)
+        {
+            case 0x09:
+                ADD(ix, BC.p);
+                pc++; break;
+            case 0x19:
+                ADD(ix, DE.p);
+                pc++; break;
+            case 0x21:
+                LD(ix, get_operand(2));
+                pc += 3; break;
+            case 0x22:
+                LD(memory[get_operand(2)], ix);
+                pc += 3; break;
+            case 0x23:
+                INC(ix);
+                pc++; break;
+            case 0x29:
+                ADD(ix, ix);
+                pc++; break;
+            case 0x2A:
+               LD(ix, memory[get_operand(2)]);
+               pc += 3; break;
+            case 0x2B:
+                DEC(ix);
+                pc++; break;
+            case 0x34:
+                INC(*ixx);
+                pc += 2; break;
+            case 0x35:
+                DEC(*ixx);
+                pc += 2; break;
+            case 0x36:
+                LD(*ixx, rom[pc+2]);
+                pc += 2; break;
+            case 0x39:
+                ADD(ix, sp);
+                pc++; break;
+            case 0x46:
+                LD(*B, *ixx);
+                pc += 2; break;
+            case 0x4E:
+                LD(*C, *ixx);
+                pc += 2; break;
+            case 0x56:
+                LD(*D, *ixx);
+                pc += 2; break;
+            case 0x5E:
+                LD(*E, *ixx);
+                pc += 2; break;
+            case 0x66:
+                LD(*H, *ixx);
+                pc += 2; break;
+            case 0x6E:
+                LD(*L, *ixx);
+                pc += 2; break;
+            case 0x70:
+            case 0x71:
+            case 0x72:
+            case 0x73:
+            case 0x74:
+            case 0x75:
+                LD(*ixx, *registers[low_nibble]);
+                pc += 2; break;
+            case 0x77:
+                LD(*ixx, *A);
+                pc += 2; break;
+            case 0x7E:
+                LD(*A, *ixx);
+                pc += 2; break;
+            case 0x86:
+                ADD(*A, *ixx);
+                pc += 2; break;
+            case 0x8E:
+                ADC(*A, *ixx);
+                pc += 2; break;
+            case 0x96:
+                SUB(*ixx);
+                pc += 2; break;
+            case 0x9E:
+                SBC(*A, *ixx);
+                pc += 2; break;
+            case 0xA6:
+                AND(*ixx);
+                pc += 2; break;
+            case 0xAE:
+                XOR(*ixx);
+                pc += 2; break;
+            case 0xB6:
+                OR(*ixx);
+                pc += 2; break;
+            case 0xBE:
+                CP(*ixx);
+                pc += 2; break;
+            case 0xDD:
+                // TODO IX BITS
+                break;
+            case 0xE1:
+                POP(ix);
+                pc++; break;
+            case 0xE3:
+                std::swap(ixl, memory[sp]);
+                std::swap(ixh, memory[sp+1]);
+                pc++; break;
+            case 0xE5:
+                PUSH(ix);
+                pc++; break;
+            case 0xE9:
+                pc = memory[ix];
+                break;
+            case 0xF9:
+                LD(sp, ix);
+                pc++; break;
         }
     }
 
