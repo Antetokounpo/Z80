@@ -6,6 +6,7 @@
 #include<fstream>
 #include<cstring>
 #include<cmath>
+#include<algorithm>
 
 #define LD(DST, SRC) DST = SRC
 #define INC(O) O = add(O, 1, sizeof(O))
@@ -139,7 +140,6 @@ namespace Z80
             uint get_flag(uint flag);
             void flag_affect(uint result, int8_t flags[]);
 
-            void swap(uint16_t* v1, uint16_t* v2);
             uint8_t onescomp(uint8_t bin);
             uint twoscomp(uint8_t bin);
             bool parity_check(uint bin);
@@ -209,7 +209,7 @@ namespace Z80
                 rlca();
                 pc++; break;
             case 0x08: /* ex af, af' */
-                swap(&(AF.p), &(AF_.p));
+                std::swap(AF.p, AF_.p);
                 pc++; break;
             case 0x09: /* add hl, bc */
                 ADD(HL.p, BC.p);
@@ -882,9 +882,9 @@ namespace Z80
                 else pc++;
                 break;
             case 0xD9:
-                swap(&(BC.p), &(BC_.p));
-                swap(&(DE.p), &(DE_.p));
-                swap(&(HL.p), &(HL_.p));
+                std::swap(BC.p, BC_.p);
+                std::swap(DE.p, DE_.p);
+                std::swap(HL.p, HL_.p);
                 pc++; break;
             case 0xDA:
                 if(get_flag(0))
@@ -959,7 +959,7 @@ namespace Z80
                     pc = get_operand(2);
                 break;
             case 0xEB:
-                swap(&(DE.p), &(HL.p));
+                std::swap(DE.p, HL.p);
                 pc++; break;
             case 0xEC:
                 if(get_flag(2))
@@ -1430,13 +1430,6 @@ namespace Z80
         set_F5(0x1 << 5 & result);
         set_ZF((result & 0xFF) == 0);
         set_SF(twoscomp(result) & 0x80);
-    }
-
-    void Z80::swap(uint16_t* v1, uint16_t* v2)
-    {
-        uint16_t temp = *v1;
-        *v1 = *v2;
-        *v2 = temp;
     }
 
     uint8_t Z80::onescomp(uint8_t bin)
