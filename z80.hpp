@@ -57,7 +57,7 @@ namespace Z80
             Register HL_;
 
             /* Index registers */
-            Register INDEX_X; uint8_t ixl = INDEX_X.r[0]; uint8_t ixh = INDEX_X.r[0]; uint16_t ix = INDEX_X.p; /* Index X */
+            Register INDEX_X = {0}; uint8_t ixl = INDEX_X.r[0]; uint8_t ixh = INDEX_X.r[0]; uint16_t ix = INDEX_X.p; /* Index X */
             uint16_t iy; /* Index Y */
             uint16_t sp; /* Stack pointer */
 
