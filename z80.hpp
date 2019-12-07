@@ -179,7 +179,9 @@ namespace Z80
     void Z80::execute(uint8_t opcode)
     {
         #ifdef DEBUG
+	        std::cout << std::hex << "PC: " << (uint)pc << std::endl;
             std::cout << std::hex << "opcode: " << (uint)opcode << std::endl;
+            getchar();
         #endif
 
         switch (opcode)
