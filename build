@@ -1,2 +1,0 @@
-#!/usr/bin/bash
-g++ main.cpp -DDEBUG -Wall -o emu
