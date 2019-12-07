@@ -261,7 +261,7 @@ namespace Z80
                 rla();
                 pc++; break;
             case 0x18: /* jr * */
-                pc += (int)get_operand(1); break;
+                pc += (int8_t)get_operand(1); break;
             case 0x19: /* add hl, de */
                 ADD(HL.p, DE.p);
                 pc++; break;
@@ -285,7 +285,8 @@ namespace Z80
                 pc++; break;
             
             case 0x20: /* jr nz, * */
-                if(!(*F & 0x40)) pc += (int)get_operand(1);
+                if(!(*F & 0x40)) pc += (int8_t)get_operand(1);
+                else pc += 2;;
                 break;
             case 0x21: /* ld hl, ** */
                 LD(HL.r[0], get_operand(1));
