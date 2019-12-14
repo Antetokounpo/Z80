@@ -239,8 +239,7 @@ namespace Z80
                 djnz((int)get_operand(1));
                 break;
             case 0x11: /* ld de, ** */
-                LD(DE.r[0], get_operand(1));
-                LD(DE.r[1], rom[pc+2]);
+                LD(DE.p, get_operand(2));
                 pc += 3; break;
             case 0x12: /* ld (de), a */
                 LD(memory[DE.p], *A);
@@ -289,8 +288,7 @@ namespace Z80
                 else pc += 2;;
                 break;
             case 0x21: /* ld hl, ** */
-                LD(HL.r[0], get_operand(1));
-                LD(HL.r[1], rom[pc+2]);
+                LD(HL.p, get_operand(2));
                 pc += 3; break;
             case 0x22: /* ld (**), hl */
                 LD(memory[pc+1], HL.r[0]);
@@ -1359,7 +1357,7 @@ namespace Z80
                 DEC(*ixx);
                 pc += 2; break;
             case 0x36:
-                LD(*ixx, rom[pc+2]);
+                LD(*ixx, get_operand(2) << 8);
                 pc += 2; break;
             case 0x39:
                 ADD(ix, sp);
