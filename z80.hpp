@@ -8,11 +8,8 @@
 #include<cmath>
 #include<algorithm>
 
-#define DEC(O) O = sub(O, 1, sizeof(O))
-#define SUB(SRC) sub(*A, SRC, 1);
 #define OUT(DST, SRC) ports[DST] = SRC
 #define IN(DST, SRC) DST = ports[SRC]
-#define SBC(DST, SRC) sub(DST, SRC + get_flag(0), sizeof(DST))
 
 namespace Z80
 {
@@ -73,7 +70,10 @@ namespace Z80
             template <class T, class U> void add(T& dst, U src);
             template <class T> void inc(T& dst);
             template <class T, class U> void adc(T& dst, U src);
-            uint sub(uint dst, uint src, size_t type);
+            template <class T, class U> void arithmetic_sub(T& dst, U src);
+            void sub(uint src);
+            template <class T> void dec(T& dst);
+            template <class T, class U> void sbc(T& dst, U src);
             void bitwise_and(uint src);
             void bitwise_xor(uint src);
             void bitwise_or(uint src);
@@ -194,7 +194,7 @@ namespace Z80
                 inc(*B);
                 pc++; break;
             case 0x05: /* dec b */
-                DEC(*B);
+                dec(*B);
                 set_ZF(*B == 0);
                 pc++; break;
             case 0x06: /* ld b, * */
@@ -213,13 +213,13 @@ namespace Z80
                 ld(*A, memory[BC.p]);
                 pc++; break;
             case 0x0B: /* dec bc */
-                DEC(BC.p);
+                dec(BC.p);
                 pc++; break;
             case 0x0C: /* inc c */
                 inc(*C);
                 pc++; break;
             case 0x0D: /* dec c */
-                DEC(*C);
+                dec(*C);
                 pc++; break;
             case 0x0E: /* ld c, * */
                 ld(*C, get_operand(1));
@@ -244,7 +244,7 @@ namespace Z80
                 inc(*D);
                 pc++; break;
             case 0x15: /* dec d */
-                DEC(*D);
+                dec(*D);
                 pc++; break;
             case 0x16: /* ld d, * */
                 ld(*D, get_operand(1));
@@ -261,13 +261,13 @@ namespace Z80
                 ld(*A, memory[DE.p]);
                 pc++; break;
             case 0x1B: /* dec de */
-                DEC(DE.p);
+                dec(DE.p);
                 pc++; break;
             case 0x1C: /* inc e */
                 inc(*E);
                 pc++; break;
             case 0x1D: /* dec e */
-                DEC(*E);
+                dec(*E);
                 pc++; break;
             case 0x1E: /* ld e, * */
                 ld(*E, get_operand(1));
@@ -294,7 +294,7 @@ namespace Z80
                 inc(HL.r[0]);
                 pc++; break;
             case 0x25: /* dec h */
-                DEC(HL.r[0]);
+                dec(HL.r[0]);
                 pc++; break;
             case 0x26: /* ld h, * */
                 ld(HL.r[0], get_operand(1));
@@ -314,13 +314,13 @@ namespace Z80
                 ld(HL.r[1], memory[pc+2]);
                 pc += 3; break;
             case 0x2B: /* dec hl */
-                DEC(HL.p);
+                dec(HL.p);
                 pc++; break;
             case 0x2C: /* inc l */
                 inc(*L);
                 pc++; break;
             case 0x2D: /* dec l */
-                DEC(*L);
+                dec(*L);
                 pc++; break;
             case 0x2E: /* ld l, * */
                 ld(*L, get_operand(1));
@@ -345,7 +345,7 @@ namespace Z80
                 inc(memory[HL.p]);
                 pc++; break;
             case 0x35:
-                DEC(memory[HL.p]);
+                dec(memory[HL.p]);
                 pc++; break;
             case 0x36:
                 ld(memory[HL.p], get_operand(1));
@@ -363,13 +363,13 @@ namespace Z80
                 ld(*A, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x3B:
-                DEC(sp);
+                dec(sp);
                 pc++; break;
             case 0x3C:
                 inc(*A);
                 pc++; break;
             case 0x3D:
-                DEC(*A);
+                dec(*A);
                 pc++; break;
             case 0x3E:
                 ld(*A, get_operand(1));
@@ -624,52 +624,52 @@ namespace Z80
                 pc++; break;
 
             case 0x90:
-                SUB(*B);
+                sub(*B);
                 pc++; break;
             case 0x91:
-                SUB(*C);
+                sub(*C);
                 pc++; break;
             case 0x92:
-                SUB(*D);
+                sub(*D);
                 pc++; break;
             case 0x93:
-                SUB(*E);
+                sub(*E);
                 pc++; break;
             case 0x94:
-                SUB(*H);
+                sub(*H);
                 pc++; break;
             case 0x95:
-                SUB(*L);
+                sub(*L);
                 pc++; break;
             case 0x96:
-                SUB(memory[HL.p]);
+                sub(memory[HL.p]);
                 pc++; break;
             case 0x97:
-                SUB(*A);
+                sub(*A);
                 pc++; break;
             case 0x98:
-                SUB(*B + get_flag(0));
+                sub(*B + get_flag(0));
                 pc++; break;
             case 0x99:
-                SUB(*C + get_flag(0));
+                sub(*C + get_flag(0));
                 pc++; break;
             case 0x9A:
-                SUB(*D + get_flag(0));
+                sub(*D + get_flag(0));
                 pc++; break;
             case 0x9B:
-                SUB(*E + get_flag(0));
+                sub(*E + get_flag(0));
                 pc++; break;
             case 0x9C:
-                SUB(*H + get_flag(0));
+                sub(*H + get_flag(0));
                 pc++; break;
             case 0x9D:
-                SUB(*L + get_flag(0));
+                sub(*L + get_flag(0));
                 pc++; break;
             case 0x9E:
-                SUB(memory[HL.p] + get_flag(0));
+                sub(memory[HL.p] + get_flag(0));
                 pc++; break;
             case 0x9F:
-                SUB(*A + get_flag(0));
+                sub(*A + get_flag(0));
                 pc++; break;
 
             case 0xA0:
@@ -866,7 +866,7 @@ namespace Z80
                 push(DE.p);
                 pc++; break;
             case 0xD6:
-                SUB(get_operand(1));
+                sub(get_operand(1));
                 pc += 2; break;
             case 0xD7:
                 push(pc+1);
@@ -901,7 +901,7 @@ namespace Z80
                 interpret_ix(rom[++pc]);
                 break;
             case 0xDE:
-                SUB(get_operand(1) + get_flag(0));
+                sub(get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xDF:
                 push(pc+1);
@@ -1059,7 +1059,7 @@ namespace Z80
                 OUT(*C, *B);
                 pc++; break;
             case 0x42:
-                SBC(HL.p, BC.p);
+                sbc(HL.p, BC.p);
                 pc++; break;
             case 0x43:
                 ld(memory[get_operand(2)], BC.p);
@@ -1104,7 +1104,7 @@ namespace Z80
                 OUT(*C, *B);
                 pc++; break;
             case 0x52:
-                SBC(HL.p, DE.p);
+                sbc(HL.p, DE.p);
                 pc++; break;
             case 0x53:
                 ld(memory[get_operand(2)], DE.p);
@@ -1149,7 +1149,7 @@ namespace Z80
                 OUT(*C, *H);
                 pc++; break;
             case 0x62:
-                SBC(HL.p, HL.p);
+                sbc(HL.p, HL.p);
                 pc++; break;
             case 0x65:
                 pop(pc);
@@ -1179,7 +1179,7 @@ namespace Z80
                 pc++; break;
 
             case 0x72:
-                SBC(HL.p, sp);
+                sbc(HL.p, sp);
                 pc++; break;
             case 0x73:
                 ld(memory[get_operand(2)], sp);
@@ -1341,13 +1341,13 @@ namespace Z80
                ld(ix, memory[get_operand(2)]);
                pc += 3; break;
             case 0x2B:
-                DEC(ix);
+                dec(ix);
                 pc++; break;
             case 0x34:
                 inc(*ixx);
                 pc += 2; break;
             case 0x35:
-                DEC(*ixx);
+                dec(*ixx);
                 pc += 2; break;
             case 0x36:
                 ld(*ixx, get_operand(2) << 8);
@@ -1394,10 +1394,10 @@ namespace Z80
                 adc(*A, *ixx);
                 pc += 2; break;
             case 0x96:
-                SUB(*ixx);
+                sub(*ixx);
                 pc += 2; break;
             case 0x9E:
-                SBC(*A, *ixx);
+                sbc(*A, *ixx);
                 pc += 2; break;
             case 0xA6:
                 bitwise_and(*ixx);
@@ -1486,11 +1486,11 @@ namespace Z80
         add(dst, src+get_flag(0));
     }
 
-    uint Z80::sub(uint dst, uint src, size_t type)
+    template <class T, class U> void Z80::arithmetic_sub(T& dst, U src)
     {
         uint result = dst - src;
-        if(type == 2)
-            return result;
+        if(sizeof(T) == 2)
+            dst = result;
         uint half_result = (dst & 0x0F) - (src & 0x0F);
 
         set_CF(result > 255);
@@ -1502,7 +1502,22 @@ namespace Z80
         set_ZF((result & 0xFF) == 0);
         set_SF(twoscomp(result) & 0x80);
 
-        return result;
+        dst = result;
+    }
+
+    void Z80::sub(uint src)
+    {
+        arithmetic_sub(*A, src);
+    }
+
+    template <class T> void Z80::dec(T& dst)
+    {
+        arithmetic_sub(dst, 1);
+    }
+
+    template <class T, class U> void Z80::sbc(T& dst, U src)
+    {
+        arithmetic_sub(dst, src+get_flag(0));
     }
 
     void Z80::bitwise_and(uint src)
@@ -1633,7 +1648,7 @@ namespace Z80
 
     void Z80::djnz(int value)
     {
-        DEC(*B);
+        dec(*B);
         if(*B != 0)
             pc += value;
         else
@@ -2009,10 +2024,7 @@ namespace Z80
     }
 }
 
-#undef DEC
-#undef SUB
 #undef OUT
 #undef IN
-#undef SBC
 
 #endif
