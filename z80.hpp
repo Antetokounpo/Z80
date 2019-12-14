@@ -13,12 +13,6 @@
 #define DEC(O) O = sub(O, 1, sizeof(O))
 #define ADD(DST, SRC) DST = add(DST, SRC, sizeof(DST))
 #define SUB(SRC) sub(*A, SRC, 1);
-#define AND(SRC) bitwise_and(SRC)
-#define XOR(SRC) bitwise_xor(SRC)
-#define OR(SRC) bitwise_or(SRC)
-#define CP(SRC) cp(SRC)
-#define POP(DST) pop(&(DST))
-#define PUSH(SRC) push(SRC)
 #define OUT(DST, SRC) ports[DST] = SRC
 #define IN(DST, SRC) DST = ports[SRC]
 #define SBC(DST, SRC) sub(DST, SRC + get_flag(0), sizeof(DST))
@@ -124,7 +118,7 @@ namespace Z80
             void res(uint8_t b, uint8_t* m);
             void set(uint8_t b, uint8_t *m);
 
-            void pop(uint16_t* dst);
+            void pop(uint16_t& dst);
             void push(uint16_t src);
 
             void set_flag(uint8_t flag, bool value);
@@ -680,109 +674,109 @@ namespace Z80
                 pc++; break;
 
             case 0xA0:
-                AND(*B);
+                bitwise_and(*B);
                 pc++; break;
             case 0xA1:
-                AND(*C);
+                bitwise_and(*C);
                 pc++; break;
             case 0xA2:
-                AND(*D);
+                bitwise_and(*D);
                 pc++; break;
             case 0xA3:
-                AND(*E);
+                bitwise_and(*E);
                 pc++; break;
             case 0xA4:
-                AND(*H);
+                bitwise_and(*H);
                 pc++; break;
             case 0xA5:
-                AND(*L);
+                bitwise_and(*L);
                 pc++; break;
             case 0xA6:
-                AND(memory[HL.p]);
+                bitwise_and(memory[HL.p]);
                 pc++; break;
             case 0xA7:
-                AND(*A);
+                bitwise_and(*A);
                 pc++; break;
             case 0xA8:
-                XOR(*B);
+                bitwise_xor(*B);
                 pc++; break;
             case 0xA9:
-                XOR(*C);
+                bitwise_xor(*C);
                 pc++; break;
             case 0xAA:
-                XOR(*D);
+                bitwise_xor(*D);
                 pc++; break;
             case 0xAB:
-                XOR(*E);
+                bitwise_xor(*E);
                 pc++; break;
             case 0xAC:
-                XOR(*H);
+                bitwise_xor(*H);
                 pc++; break;
             case 0xAD:
-                XOR(*L);
+                bitwise_xor(*L);
                 pc++; break;
             case 0xAE:
-                XOR(memory[HL.p]);
+                bitwise_xor(memory[HL.p]);
                 pc++; break;
             case 0xAF:
-                XOR(*A);
+                bitwise_xor(*A);
                 pc++; break;
 
             case 0xB0:
-                OR(*B);
+                bitwise_or(*B);
                 pc++; break;
             case 0xB1:
-                OR(*C);
+                bitwise_or(*C);
                 pc++; break;
             case 0xB2:
-                OR(*D);
+                bitwise_or(*D);
                 pc++; break;
             case 0xB3:
-                OR(*E);
+                bitwise_or(*E);
                 pc++; break;
             case 0xB4:
-                OR(*H);
+                bitwise_or(*H);
                 pc++; break;
             case 0xB5:
-                OR(*L);
+                bitwise_or(*L);
                 pc++; break;
             case 0xB6:
-                OR(memory[HL.p]);
+                bitwise_or(memory[HL.p]);
                 pc++; break;
             case 0xB7:
-                OR(*A);
+                bitwise_or(*A);
                 pc++; break;
             case 0xB8:
-                CP(*B);
+                cp(*B);
                 pc++; break;
             case 0xB9:
-                CP(*C);
+                cp(*C);
                 pc++; break;
             case 0xBA:
-                CP(*D);
+                cp(*D);
                 pc++; break;
             case 0xBB:
-                CP(*E);
+                cp(*E);
                 pc++; break;
             case 0xBC:
-                CP(*H);
+                cp(*H);
                 pc++; break;
             case 0xBD:
-                CP(*L);
+                cp(*L);
                 pc++; break;
             case 0xBE:
-                CP(memory[HL.p]);
+                cp(memory[HL.p]);
                 pc++; break;
             case 0xBF:
-                CP(*A);
+                cp(*A);
                 pc++; break;
 
             case 0xC0: /* ret nz */
-                if(!(get_flag(6))) POP(pc);
+                if(!(get_flag(6))) pop(pc);
                 else pc++;
                 break;
             case 0xC1:
-                POP(BC.p);
+                pop(BC.p);
                 pc++; break;
             case 0xC2:
                 if(!(get_flag(6)))
@@ -796,26 +790,26 @@ namespace Z80
             case 0xC4:
                 if(!(get_flag(6)))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
             case 0xC5:
-                PUSH(BC.p);
+                push(BC.p);
                 pc++; break;
             case 0xC6:
                 ADD(*A, get_operand(1));
                 pc += 2; break;
             case 0xC7:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x00; break;
             case 0xC8:
-                if(get_flag(6)) POP(pc);
+                if(get_flag(6)) pop(pc);
                 else pc++;
                 break;
             case 0xC9:
-                POP(pc);
+                pop(pc);
                 break;
             case 0xCA:
                 if(get_flag(6))
@@ -829,28 +823,28 @@ namespace Z80
             case 0xCC:
                 if(get_flag(6))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
             case 0xCD:
-                PUSH(pc+3);
+                push(pc+3);
                 pc = get_operand(2);
                 break;
             case 0xCE:
                 ADD(*A, get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xCF:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x08; break;
 
             case 0xD0:
-                if(!(get_flag(0))) POP(pc);
+                if(!(get_flag(0))) pop(pc);
                 else pc++;
                 break;
             case 0xD1:
-                POP(DE.p);
+                pop(DE.p);
                 pc++; break;
             case 0xD2:
                 if(!(get_flag(0)))
@@ -864,22 +858,22 @@ namespace Z80
             case 0xD4:
                 if(!(get_flag(0)))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
             case 0xD5:
-                PUSH(DE.p);
+                push(DE.p);
                 pc++; break;
             case 0xD6:
                 SUB(get_operand(1));
                 pc += 2; break;
             case 0xD7:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x10; break;
             case 0xD8:
-                if(get_flag(0)) POP(pc);
+                if(get_flag(0)) pop(pc);
                 else pc++;
                 break;
             case 0xD9:
@@ -899,7 +893,7 @@ namespace Z80
             case 0xDC:
                 if(get_flag(0))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
@@ -911,15 +905,15 @@ namespace Z80
                 SUB(get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xDF:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x18; break;
 
             case 0xE0:
-                if(!get_flag(2)) POP(pc);
+                if(!get_flag(2)) pop(pc);
                 else pc++;
                 break;
             case 0xE1:
-                POP(HL.p);
+                pop(HL.p);
                 pc++; break;
             case 0xE2:
                 if(!get_flag(2))
@@ -934,22 +928,22 @@ namespace Z80
             case 0xE4:
                 if(!get_flag(2))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
             case 0xE5:
-                PUSH(HL.p);
+                push(HL.p);
                 pc++; break;
             case 0xE6:
-                AND(get_operand(1));
+                bitwise_and(get_operand(1));
                 pc += 2; break;
             case 0xE7:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x20; break;
             case 0xE8:
-                if(get_flag(2)) POP(pc);
+                if(get_flag(2)) pop(pc);
                 else pc++;
                 break;
             case 0xE9: /* jp (hl) */
@@ -965,7 +959,7 @@ namespace Z80
             case 0xEC:
                 if(get_flag(2))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
@@ -974,18 +968,18 @@ namespace Z80
                 interpret_extd(rom[++pc]); /* Incremente le Program Counter en fetchant */
                 break;
             case 0xEE:
-                XOR(get_operand(1));
+                bitwise_xor(get_operand(1));
                 pc += 2; break;
             case 0xEF:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x28; break;
 
             case 0xF0:
-                if(!get_flag(7)) POP(pc);
+                if(!get_flag(7)) pop(pc);
                 else pc++;
                 break;
             case 0xF1:
-                POP(AF.p);
+                pop(AF.p);
                 pc++; break;
             case 0xF2:
                 if(!get_flag(7))
@@ -1000,22 +994,22 @@ namespace Z80
             case 0xF4:
                 if(!get_flag(7))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
                 break;
             case 0xF5:
-                PUSH(AF.p);
+                push(AF.p);
                 pc++; break;
             case 0xF6:
-                OR(get_operand(1));
+                bitwise_or(get_operand(1));
                 pc += 2; break;
             case 0xF7:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x30; break;
             case 0xF8:
-                if(get_flag(7)) POP(pc);
+                if(get_flag(7)) pop(pc);
                 else pc++;
                 break;
             case 0xF9:
@@ -1034,7 +1028,7 @@ namespace Z80
             case 0xFC:
                 if(get_flag(7))
                 {
-                    PUSH(pc+3);
+                    push(pc+3);
                     pc = get_operand(2);
                 }else
                     pc += 3;
@@ -1043,10 +1037,10 @@ namespace Z80
                 // TODO IY
                 break;
             case 0xFE:
-                CP(get_operand(1));
+                cp(get_operand(1));
                 pc += 2; break;
             case 0xFF:
-                PUSH(pc+1);
+                push(pc+1);
                 pc = 0x38; break;
 
             default:
@@ -1075,7 +1069,7 @@ namespace Z80
                 *A = twoscomp(*A);
                 pc++; break;
             case 0x45:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x46:
@@ -1097,7 +1091,7 @@ namespace Z80
                 LD(BC.p, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x4D: /* reti */
-                POP(pc);
+                pop(pc);
                 // Signals I/O device TODO
                 break;
             case 0x4F:
@@ -1117,7 +1111,7 @@ namespace Z80
                 LD(memory[get_operand(2)], DE.p);
                 pc += 3; break;
             case 0x55:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x56:
@@ -1139,7 +1133,7 @@ namespace Z80
                 LD(DE.p, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x5D:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x5E:
@@ -1159,7 +1153,7 @@ namespace Z80
                 SBC(HL.p, HL.p);
                 pc++; break;
             case 0x65:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x66:
@@ -1178,7 +1172,7 @@ namespace Z80
                 ADC(HL.p, HL.p);
                 pc++; break;
             case 0x6D:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x6F:
@@ -1192,7 +1186,7 @@ namespace Z80
                 LD(memory[get_operand(2)], sp);
                 pc += 3; break;
             case 0x75:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x76:
@@ -1211,7 +1205,7 @@ namespace Z80
                 LD(sp, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x7D:
-                POP(pc);
+                pop(pc);
                 iff1 = iff2;
                 break;
             case 0x7E:
@@ -1407,29 +1401,29 @@ namespace Z80
                 SBC(*A, *ixx);
                 pc += 2; break;
             case 0xA6:
-                AND(*ixx);
+                bitwise_and(*ixx);
                 pc += 2; break;
             case 0xAE:
-                XOR(*ixx);
+                bitwise_xor(*ixx);
                 pc += 2; break;
             case 0xB6:
-                OR(*ixx);
+                bitwise_or(*ixx);
                 pc += 2; break;
             case 0xBE:
-                CP(*ixx);
+                cp(*ixx);
                 pc += 2; break;
             case 0xDD:
                 // TODO IX BITS
                 break;
             case 0xE1:
-                POP(ix);
+                pop(ix);
                 pc++; break;
             case 0xE3:
                 std::swap(ixl, memory[sp]);
                 std::swap(ixh, memory[sp+1]);
                 pc++; break;
             case 0xE5:
-                PUSH(ix);
+                push(ix);
                 pc++; break;
             case 0xE9:
                 pc = memory[ix];
@@ -1936,9 +1930,9 @@ namespace Z80
         *m |= (0x1 << b);
     }
 
-    void Z80::pop(uint16_t* dst)
+    void Z80::pop(uint16_t& dst)
     {
-       *dst = memory[sp+1] << 8 | memory[sp];
+       dst = memory[sp+1] << 8 | memory[sp];
        sp += 2;
     }
 
@@ -2006,13 +2000,6 @@ namespace Z80
 #undef DEC
 #undef ADD
 #undef SUB
-#undef AND
-#undef XOR
-#undef OR
-#undef CP
-#undef POP
-#undef PUSH
-#undef PUSH
 #undef OUT
 #undef IN
 #undef SBC
