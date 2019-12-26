@@ -1,5 +1,7 @@
-#include<fstream>
+#include<cstdint>
+#include<cstring>
 #include<iostream>
+#include<fstream>
 
 #include "z80.hpp"
 
@@ -1327,8 +1329,8 @@ namespace Z80
         if(sizeof(T) == 2) /* 16 bit operations don't affect flags */
             dst = dst + src;
 
-        uint half_result = (dst&0x0F) + (src&0x0F);
-        uint result = dst + src;
+        unsigned int half_result = (dst&0x0F) + (src&0x0F);
+        unsigned int result = dst + src;
 
         set_CF(result > 255);
         set_NF(false);
@@ -1354,10 +1356,10 @@ namespace Z80
 
     template <class T, class U> void Z80::arithmetic_sub(T& dst, U src)
     {
-        uint result = dst - src;
+        unsigned int result = dst - src;
         if(sizeof(T) == 2)
             dst = result;
-        uint half_result = (dst & 0x0F) - (src & 0x0F);
+        unsigned int half_result = (dst & 0x0F) - (src & 0x0F);
 
         set_CF(result > 255);
         set_NF(true);
@@ -1371,7 +1373,7 @@ namespace Z80
         dst = result;
     }
 
-    void Z80::sub(uint src)
+    void Z80::sub(unsigned int src)
     {
         arithmetic_sub(*A, src);
     }
@@ -1386,9 +1388,9 @@ namespace Z80
         arithmetic_sub(dst, src+get_flag(0));
     }
 
-    void Z80::bitwise_and(uint src)
+    void Z80::bitwise_and(unsigned int src)
     {
-        uint result = *A & src;
+        unsigned int result = *A & src;
 
         set_CF(false);
         set_NF(false);
@@ -1400,9 +1402,9 @@ namespace Z80
         *A = result;
     }
 
-    void Z80::bitwise_xor(uint src)
+    void Z80::bitwise_xor(unsigned int src)
     {
-        uint result = *A ^ src;
+        unsigned int result = *A ^ src;
 
         set_CF(false);
         set_NF(false);
@@ -1414,9 +1416,9 @@ namespace Z80
         *A = result;
     }
 
-    void Z80::bitwise_or(uint src)
+    void Z80::bitwise_or(unsigned int src)
     {
-        uint result = *A | src;
+        unsigned int result = *A | src;
         set_CF(false);
         set_NF(false);
         set_POF(parity_check(result));
@@ -1427,10 +1429,10 @@ namespace Z80
         *A = result;
     }
 
-    void Z80::cp(uint src)
+    void Z80::cp(unsigned int src)
     {
-        uint result = *A - src;
-        uint half_result = (*A & 0xF) - (src & 0xF);
+        unsigned int result = *A - src;
+        unsigned int half_result = (*A & 0xF) - (src & 0xF);
 
         set_CF(result > 255);
         set_NF(true);
@@ -1456,15 +1458,15 @@ namespace Z80
         return bin;
     }
 
-    uint Z80::twoscomp(uint8_t bin)
+    unsigned int Z80::twoscomp(uint8_t bin)
     {
         return onescomp(bin)+1;
     }
 
-    bool Z80::parity_check(uint bin)
+    bool Z80::parity_check(unsigned int bin)
     {
-        uint c = 0;
-        for(uint i = 0; i<sizeof(bin)*8; ++i)
+        unsigned int c = 0;
+        for(unsigned int i = 0; i<sizeof(bin)*8; ++i)
         {
             c += bin << i & 0x1;
         }
@@ -1472,7 +1474,7 @@ namespace Z80
         return !(c % 2);
     }
 
-    uint16_t Z80::get_operand(uint offset)
+    uint16_t Z80::get_operand(unsigned int offset)
     {
         if (offset == 1)
             return rom[pc+1];
@@ -1602,8 +1604,8 @@ namespace Z80
 
     void Z80::cpi()
     {
-        uint result = *A - memory[HL.p];
-        uint half_result = (*A&0x0F) - (memory[HL.p]&0x0F);
+        unsigned int result = *A - memory[HL.p];
+        unsigned int half_result = (*A&0x0F) - (memory[HL.p]&0x0F);
 
         set_SF(twoscomp(result&0xFF) > 255);
         set_ZF((result&0xFF) == 0);
@@ -1652,8 +1654,8 @@ namespace Z80
 
     void Z80::cpd()
     {
-        uint result = *A - memory[HL.p];
-        uint half_result = (*A&0x0F) - (HL.p&0x0F);
+        unsigned int result = *A - memory[HL.p];
+        unsigned int half_result = (*A&0x0F) - (HL.p&0x0F);
 
         set_SF(twoscomp(result) > 255);
         set_ZF(result == 0);
@@ -1884,7 +1886,7 @@ namespace Z80
         set_flag(7, value);
     }
 
-    uint Z80::get_flag(uint flag)
+    unsigned int Z80::get_flag(unsigned int flag)
     {
         return *F << flag & 0x1;
     }
