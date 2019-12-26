@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-g++ test.cpp -DDEBUG -Wall -o emu
+g++ test.cpp ../z80.cpp -DDEBUG -Wall -o emu
