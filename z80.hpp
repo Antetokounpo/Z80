@@ -136,4 +136,6 @@ namespace Z80
     };
 }
 
+#include "z80.tpp"
+
 #endif
