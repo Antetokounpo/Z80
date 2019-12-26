@@ -125,8 +125,8 @@ namespace Z80
             unsigned int get_flag(unsigned int flag);
             void flag_affect(unsigned int result, int8_t flags[]);
 
-            uint8_t onescomp(uint8_t bin);
-            unsigned int twoscomp(uint8_t bin);
+            template<class T> T onescomp(T bin);
+            template<class T> T twoscomp(T bin);
             bool parity_check(unsigned int bin);
             uint16_t get_operand(unsigned int offset);
 

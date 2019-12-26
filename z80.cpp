@@ -1444,9 +1444,9 @@ namespace Z80
         set_SF(twoscomp(result) & 0x80);
     }
 
-    uint8_t Z80::onescomp(uint8_t bin)
+    template<class T> T Z80::onescomp(T bin)
     {
-        for(int i = 0; i<8; ++i)
+        for(int i = 0; i<sizeof(bin)*8; ++i)
         {
             uint8_t b = 0x1 << i;
             if(bin & b)
@@ -1458,7 +1458,7 @@ namespace Z80
         return bin;
     }
 
-    unsigned int Z80::twoscomp(uint8_t bin)
+    template<class T> T Z80::twoscomp(T bin)
     {
         return onescomp(bin)+1;
     }
