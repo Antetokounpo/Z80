@@ -2,14 +2,6 @@
 #define Z80_H
 
 #include<cstdint>
-#include<iostream>
-#include<fstream>
-#include<cstring>
-#include<cmath>
-#include<algorithm>
-
-#define OUT(DST, SRC) ports[DST] = SRC
-#define IN(DST, SRC) DST = ports[SRC]
 
 namespace Z80
 {
