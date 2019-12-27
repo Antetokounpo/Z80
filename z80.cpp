@@ -889,9 +889,10 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xFB: /* ei */
-                iff1 = true;
-                iff2 = true;
-                break;
+                di();
+                pc++; step(); /* During the execution of this instruction and the following instruction, maskable interrupts are disabled. */
+                ei();
+                pc++; break;
             case 0xFC:
                 if(get_flag(7))
                 {
@@ -958,6 +959,7 @@ namespace Z80
                 ld(BC.p, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x4D: /* reti */
+                ei();
                 pop(pc);
                 // Signals I/O device TODO
                 break;
@@ -1317,6 +1319,18 @@ namespace Z80
     {
         if(pins[17])
             pc++;
+    }
+
+    void Z80::ei()
+    {
+        iff1 = true;
+        iff2 = true;
+    }
+
+    void Z80::di()
+    {
+        iff1 = false;
+        iff2 = false;
     }
 
     void Z80::sub(unsigned int src)

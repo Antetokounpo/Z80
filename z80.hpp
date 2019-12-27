@@ -58,6 +58,9 @@ namespace Z80
             bool iff2 = false;
             unsigned int interrupt_mode = 0;
 
+            void ei();
+            void di();
+
             template <class T, class U> void ld(T& dst, U src);
             template <class T, class U> void add(T& dst, U src);
             template <class T> void inc(T& dst);
