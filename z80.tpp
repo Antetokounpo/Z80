@@ -74,7 +74,7 @@ namespace Z80
     template<class T>
     T Z80::onescomp(T bin)
     {
-        for(int i = 0; i<sizeof(bin)*8; ++i)
+        for(unsigned int i = 0; i<sizeof(bin)*8; ++i)
         {
             uint8_t b = 0x1 << i;
             if(bin & b)
