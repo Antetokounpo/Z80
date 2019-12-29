@@ -14,9 +14,10 @@ namespace Z80
     class Z80
     {
         public:
-            Z80(){}
+            Z80();
             ~Z80(){}
             virtual void step();
+            virtual uint8_t fetch(int offset);
             virtual bool load(const char* filename); /* Loads ROM */
             void execute(uint8_t opcode);
 
@@ -48,7 +49,7 @@ namespace Z80
 
             uint8_t memory[65536]; /* Random Access Memory */
             uint8_t* rom;          /* Read-Only Memory */
-            unsigned int rom_size;         /* Size of the ROM file */
+            unsigned int rom_size; /* Size of the ROM file */
             uint8_t ports[256];    /* I/O ports */
 
             bool pins[40]; /* I/O pins */
@@ -136,6 +137,10 @@ namespace Z80
             void interpret_extd(uint8_t opcode);
             void interpret_bits(uint8_t opcode);
             void interpret_ix(uint8_t opcode);
+
+            unsigned int cycles; /* Variable used to count CPU cycles used by instructions */
+            unsigned int cpu_frequency; /* CPU frequency in Hz */
+            unsigned int refresh_rate; /* Display refresh rate in Hz */
     };
 }
 

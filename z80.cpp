@@ -10,6 +10,11 @@
 
 namespace Z80
 {
+    Z80::Z80()
+    {
+        cpu_frequency = 4.8 * 1000000;
+        refresh_rate = 60;
+    }
 
     bool Z80::load(const char* filename)
     {
@@ -1303,16 +1308,25 @@ namespace Z80
         }
     }
 
+    uint8_t Z80::fetch(int offset)
+    {
+        return rom[pc+offset];
+    }
+
     void Z80::step()
     {
         uint8_t opcode;
-        if(pc > rom_size)
+
+        for(cycles = 0; cycles<cpu_frequency/refresh_rate;)
         {
-            std::cout << "Program counter overflow" << std::endl;
-            exit(EXIT_FAILURE);
+            if(pc >= rom_size)
+            {
+                std::cout << "Program counter overflow" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            opcode = fetch(0);
+            execute(opcode);
         }
-        opcode = rom[pc];
-        execute(opcode);
     }
 
     void Z80::interrupt()
@@ -1408,8 +1422,12 @@ namespace Z80
     uint16_t Z80::get_operand(unsigned int offset)
     {
         if (offset == 1)
-            return rom[pc+1];
-        return rom[pc+1] << 8 | rom[pc+2];
+        {
+            cycles += 1;
+            return fetch(1);
+        }
+        cycles += 2;
+        return fetch(1) << 8 | fetch(2);
     }
 
     void Z80::rlca()
