@@ -53,7 +53,7 @@ namespace Z80
         switch (opcode)
         {
             case 0x00: /* nop */
-                pc++; break;
+                pc++; cycles += 1;break;
             case 0x01: /* ld bc, ** */
                 ld(BC.p, get_operand(2));
                 pc += 3; break;
@@ -1406,6 +1406,8 @@ namespace Z80
         set_F5(0x1 << 5 & result);
         set_ZF((result & 0xFF) == 0);
         set_SF(twoscomp(result) & 0x80);
+
+        cycles += 1;
     }
 
     bool Z80::parity_check(unsigned int bin)
@@ -1780,6 +1782,7 @@ namespace Z80
     {
        dst = memory[sp+1] << 8 | memory[sp];
        sp += 2;
+       cycles += 3;
     }
 
     void Z80::push(uint16_t src)
@@ -1787,6 +1790,7 @@ namespace Z80
         memory[sp-1] = src >> 8;
         memory[sp-2] = src & 0xFF;
         sp -= 2;
+        cycles += 3;
     }
 
     void Z80::set_flag(uint8_t flag, bool value)
