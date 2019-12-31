@@ -50,6 +50,10 @@ namespace Z80
             getchar();
         #endif
 
+        uint8_t* registers[] = {B, C, D, E, H, L, &(memory[HL.p]), A};
+
+        uint8_t low_nibble = opcode & 0xF;
+
         switch (opcode)
         {
             case 0x00: /* nop */
@@ -58,7 +62,7 @@ namespace Z80
                 ld(BC.p, get_operand(2));
                 pc += 3; break;
             case 0x02: /* ld (bc), a */
-                ld(memory[BC.p], *A);
+                ld(get_memory(BC.p), *A);
                 pc++; break;
             case 0x03: /* inc bc */
                 inc(BC.p);
@@ -252,395 +256,173 @@ namespace Z80
                 pc++; break;
             
             case 0x40:
-                ld(*B, *B);
-                pc++; break;
             case 0x41:
-                ld(*B, *C);
-                pc++; break;
             case 0x42:
-                ld(*B, *D);
-                pc++; break;
             case 0x43:
-                ld(*B, *E);
-                pc++; break;
             case 0x44:
-                ld(*B, *H);
-                pc++; break;
             case 0x45:
-                ld(*B, *L);
-                pc++; break;
             case 0x46:
-                ld(*B, memory[HL.p]);
-                pc++; break;
             case 0x47:
-                ld(*B, *A);
+                ld(*B, *(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x48:
-                ld(*C, *B);
-                pc++; break;
             case 0x49:
-                ld(*C, *C);
-                pc++; break;
             case 0x4A:
-                ld(*C, *D);
-                pc++; break;
             case 0x4B:
-                ld(*C, *E);
-                pc++; break;
             case 0x4C:
-                ld(*C, *H);
-                pc++; break;
             case 0x4D:
-                ld(*C, *L);
-                pc++; break;
             case 0x4E:
-                ld(*C, memory[HL.p]);
-                pc++; break;
             case 0x4F:
-                ld(*C, *A);
+                ld(*C, *(registers[low_nibble - 0x8]));
                 pc++; break;
             
             case 0x50:
-                ld(*D, *B);
-                pc++; break;
             case 0x51:
-                ld(*D, *C);
-                pc++; break;
             case 0x52:
-                ld(*D, *D);
-                pc++; break;
             case 0x53:
-                ld(*D, *E);
-                pc++; break;
             case 0x54:
-                ld(*D, *H);
-                pc++; break;
             case 0x55:
-                ld(*D, *L);
-                pc++; break;
             case 0x56:
-                ld(*D, memory[HL.p]);
-                pc++; break;
             case 0x57:
-                ld(*D, *A);
+                ld(*D, *(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x58:
-                ld(*E, *B);
-                pc++; break;
             case 0x59:
-                ld(*E, *C);
-                pc++; break;
             case 0x5A:
-                ld(*E, *D);
-                pc++; break;
             case 0x5B:
-                ld(*E, *E);
-                pc++; break;
             case 0x5C:
-                ld(*E, *H);
-                pc++; break;
             case 0x5D:
-                ld(*E, *L);
-                pc++; break;
             case 0x5E:
-                ld(*E, memory[HL.p]);
-                pc++; break;
             case 0x5F:
-                ld(*E, *A);
+                ld(*E, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0x60:
-                ld(*H, *B);
-                pc++; break;
             case 0x61:
-                ld(*H, *C);
-                pc++; break;
             case 0x62:
-                ld(*H, *D);
-                pc++; break;
             case 0x63:
-                ld(*H, *E);
-                pc++; break;
             case 0x64:
-                ld(*H, *H);
-                pc++; break;
             case 0x65:
-                ld(*H, *L);
-                pc++; break;
             case 0x66:
-                ld(*H, memory[HL.p]);
-                pc++; break;
             case 0x67:
-                ld(*H, *A);
+                ld(*H, *(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x68:
-                ld(*L, *B);
-                pc++; break;
             case 0x69:
-                ld(*L, *C);
-                pc++; break;
             case 0x6A:
-                ld(*L, *D);
-                pc++; break;
             case 0x6B:
-                ld(*L, *E);
-                pc++; break;
             case 0x6C:
-                ld(*L, *H);
-                pc++; break;
             case 0x6D:
-                ld(*L, *L);
-                pc++; break;
             case 0x6E:
-                ld(*L, memory[HL.p]);
-                pc++; break;
             case 0x6F:
-                ld(*L, *A);
+                ld(*L, *(registers[low_nibble - 0x8]));
                 pc++; break;
                 
             case 0x70:
-                ld(memory[HL.p], *B);
-                pc++; break;
             case 0x71:
-                ld(memory[HL.p], *C);
-                pc++; break;
             case 0x72:
-                ld(memory[HL.p], *D);
-                pc++; break;
             case 0x73:
-                ld(memory[HL.p], *E);
-                pc++; break;
             case 0x74:
-                ld(memory[HL.p], *H);
-                pc++; break;
             case 0x75:
-                ld(memory[HL.p], *L);
+            case 0x77:
+                ld(memory[HL.p], *(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x76: /* halt */
                 pins[17] = true;
                 break;
-            case 0x77:
-                ld(memory[HL.p], *A);
-                pc++; break;
             case 0x78:
-                ld(*A, *B);
-                pc++; break;
             case 0x79:
-                ld(*A, *C);
-                pc++; break;
             case 0x7A:
-                ld(*A, *D);
-                pc++; break;
             case 0x7B:
-                ld(*A, *E);
-                pc++; break;
             case 0x7C:
-                ld(*A, *H);
-                pc++; break;
             case 0x7D:
-                ld(*A, *L);
-                pc++; break;
             case 0x7E:
-                ld(*A, memory[HL.p]);
-                pc++; break;
             case 0x7F:
-                ld(*A, *A);
+                ld(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0x80:
-                add(*A, *B);
-                pc++; break;
             case 0x81:
-                add(*A, *C);
-                pc++; break;
             case 0x82:
-                add(*A, *D);
-                pc++; break;
             case 0x83:
-                add(*A, *E);
-                pc++; break;
             case 0x84:
-                add(*A, *H);
-                pc++; break;
             case 0x85:
-                add(*A, *L);
-                pc++; break;
             case 0x86:
-                add(*A, memory[HL.p]);
-                pc++; break;
             case 0x87:
-                add(*A, *A);
+                add(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x88:
-                add(*A, *B + get_flag(0));
-                pc++; break;
             case 0x89:
-                add(*A, *C + get_flag(0));
-                pc++; break;
             case 0x8A:
-                add(*A, *D + get_flag(0));
-                pc++; break;
             case 0x8B:
-                add(*A, *E + get_flag(0));
-                pc++; break;
             case 0x8C:
-                add(*A, *H + get_flag(0));
-                pc++; break;
             case 0x8D:
-                add(*A, *L + get_flag(0));
-                pc++; break;
             case 0x8E:
-                add(*A, memory[HL.p] + get_flag(0));
-                pc++; break;
             case 0x8F:
-                add(*A, *A + get_flag(0));
+                adc(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0x90:
-                sub(*B);
-                pc++; break;
             case 0x91:
-                sub(*C);
-                pc++; break;
             case 0x92:
-                sub(*D);
-                pc++; break;
             case 0x93:
-                sub(*E);
-                pc++; break;
             case 0x94:
-                sub(*H);
-                pc++; break;
             case 0x95:
-                sub(*L);
-                pc++; break;
             case 0x96:
-                sub(memory[HL.p]);
-                pc++; break;
             case 0x97:
-                sub(*A);
+                sub(*(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x98:
-                sub(*B + get_flag(0));
-                pc++; break;
             case 0x99:
-                sub(*C + get_flag(0));
-                pc++; break;
             case 0x9A:
-                sub(*D + get_flag(0));
-                pc++; break;
             case 0x9B:
-                sub(*E + get_flag(0));
-                pc++; break;
             case 0x9C:
-                sub(*H + get_flag(0));
-                pc++; break;
             case 0x9D:
-                sub(*L + get_flag(0));
-                pc++; break;
             case 0x9E:
-                sub(memory[HL.p] + get_flag(0));
-                pc++; break;
             case 0x9F:
-                sub(*A + get_flag(0));
+                sbc(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0xA0:
-                bitwise_and(*B);
-                pc++; break;
             case 0xA1:
-                bitwise_and(*C);
-                pc++; break;
             case 0xA2:
-                bitwise_and(*D);
-                pc++; break;
             case 0xA3:
-                bitwise_and(*E);
-                pc++; break;
             case 0xA4:
-                bitwise_and(*H);
-                pc++; break;
             case 0xA5:
-                bitwise_and(*L);
-                pc++; break;
             case 0xA6:
-                bitwise_and(memory[HL.p]);
-                pc++; break;
             case 0xA7:
-                bitwise_and(*A);
+                bitwise_and(*(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0xA8:
-                bitwise_xor(*B);
-                pc++; break;
             case 0xA9:
-                bitwise_xor(*C);
-                pc++; break;
             case 0xAA:
-                bitwise_xor(*D);
-                pc++; break;
             case 0xAB:
-                bitwise_xor(*E);
-                pc++; break;
             case 0xAC:
-                bitwise_xor(*H);
-                pc++; break;
             case 0xAD:
-                bitwise_xor(*L);
-                pc++; break;
             case 0xAE:
-                bitwise_xor(memory[HL.p]);
-                pc++; break;
             case 0xAF:
-                bitwise_xor(*A);
+                bitwise_xor(*(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0xB0:
-                bitwise_or(*B);
-                pc++; break;
             case 0xB1:
-                bitwise_or(*C);
-                pc++; break;
             case 0xB2:
-                bitwise_or(*D);
-                pc++; break;
             case 0xB3:
-                bitwise_or(*E);
-                pc++; break;
             case 0xB4:
-                bitwise_or(*H);
-                pc++; break;
             case 0xB5:
-                bitwise_or(*L);
-                pc++; break;
             case 0xB6:
-                bitwise_or(memory[HL.p]);
-                pc++; break;
             case 0xB7:
-                bitwise_or(*A);
+                bitwise_or(*(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0xB8:
-                cp(*B);
-                pc++; break;
             case 0xB9:
-                cp(*C);
-                pc++; break;
             case 0xBA:
-                cp(*D);
-                pc++; break;
             case 0xBB:
-                cp(*E);
-                pc++; break;
             case 0xBC:
-                cp(*H);
-                pc++; break;
             case 0xBD:
-                cp(*L);
-                pc++; break;
             case 0xBE:
-                cp(memory[HL.p]);
-                pc++; break;
             case 0xBF:
-                cp(*A);
+                cp(*(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0xC0: /* ret nz */
@@ -1430,6 +1212,12 @@ namespace Z80
         }
         cycles += 2;
         return fetch(1) << 8 | fetch(2);
+    }
+
+    uint8_t& Z80::get_memory(uint16_t address)
+    {
+        cycles += 1;
+        return memory[address];
     }
 
     void Z80::rlca()
