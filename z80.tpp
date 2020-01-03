@@ -3,8 +3,6 @@ namespace Z80
     template <class T, class U>
     void Z80::ld(T& dst, U src)
     {
-        if(sizeof(T) > 1)
-            cycles += 1; /* +2 cycles si ld agit sur des registres 16 bts */
         cycles += 1;
         dst = src;
     }

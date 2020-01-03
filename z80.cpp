@@ -2,6 +2,8 @@
 #include<cstring>
 #include<iostream>
 #include<fstream>
+#include<thread>
+#include<chrono>
 
 #include "z80.hpp"
 
@@ -47,7 +49,6 @@ namespace Z80
         #ifdef DEBUG
 	        std::cout << std::hex << "PC: " << (uint)pc << std::endl;
             std::cout << std::hex << "opcode: " << (uint)opcode << std::endl;
-            getchar();
         #endif
 
         uint8_t* registers[] = {B, C, D, E, H, L, &(memory[HL.p]), A};
@@ -161,8 +162,8 @@ namespace Z80
                 ld(HL.p, get_operand(2));
                 pc += 3; break;
             case 0x22: /* ld (**), hl */
-                ld(memory[pc+1], HL.r[0]);
-                ld(memory[pc+2], HL.r[1]);
+                ld(memory[get_operand(2)], HL.r[0]);
+                ld(memory[get_operand(2)+1], HL.r[1]);
                 pc += 3; break;
             case 0x23: /* inc hl */
                 inc(HL.p);
@@ -642,9 +643,8 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xF3: /* di */
-                iff1 = false;
-                iff2 = false;
-                break;
+                di();
+                pc++; break;
             case 0xF4:
                 if(!get_flag(7))
                 {
@@ -1098,6 +1098,7 @@ namespace Z80
     void Z80::step()
     {
         uint8_t opcode;
+        clock_t c = clock();
 
         for(cycles = 0; cycles<cpu_frequency/refresh_rate;)
         {
@@ -1121,17 +1122,20 @@ namespace Z80
     {
         iff1 = true;
         iff2 = true;
+        cycles += 1;
     }
 
     void Z80::di()
     {
         iff1 = false;
         iff2 = false;
+        cycles += 1;
     }
 
     void Z80::sub(unsigned int src)
     {
         arithmetic_sub(*A, src);
+        cycles += 1;
     }
 
     void Z80::bitwise_and(unsigned int src)
@@ -1146,6 +1150,7 @@ namespace Z80
         set_SF(twoscomp(result) & 0x80);
 
         *A = result;
+        cycles += 1;
     }
 
     void Z80::bitwise_xor(unsigned int src)
@@ -1160,6 +1165,7 @@ namespace Z80
         set_SF(twoscomp(result) & 0x80);
 
         *A = result;
+        cycles += 1;
     }
 
     void Z80::bitwise_or(unsigned int src)
@@ -1173,6 +1179,7 @@ namespace Z80
         set_SF(twoscomp(result) & 0x80);
 
         *A = result;
+        cycles += 1;
     }
 
     void Z80::cp(unsigned int src)
@@ -1211,7 +1218,7 @@ namespace Z80
             return fetch(1);
         }
         cycles += 2;
-        return fetch(1) << 8 | fetch(2);
+        return fetch(2) << 8 | fetch(1);
     }
 
     uint8_t& Z80::get_memory(uint16_t address)
@@ -1228,6 +1235,8 @@ namespace Z80
 
         set_HF(false);
         set_NF(false);
+        
+        cycles += 1;
     }
 
     void Z80::rla()
@@ -1243,6 +1252,7 @@ namespace Z80
         uint8_t lsb = 0x01 & *A;
         *A = (*A >> 1) | (lsb << 7);
         set_CF(bool(lsb));
+        cycles += 1;
     }
 
     void Z80::rra()
@@ -1272,6 +1282,7 @@ namespace Z80
             else
                 *A |= b; /* change 0 to 1 */
         }
+        cycles += 1;
     }
 
     void Z80::daa()
@@ -1295,6 +1306,7 @@ namespace Z80
             set_CF(true);
         }else
             set_CF(false);
+        cycles += 1;
     }
 
     void Z80::rrd()
@@ -1336,6 +1348,7 @@ namespace Z80
         HL.p++;
         BC.p--;
 
+        cycles += 4;
         set_HF(false);
         set_POF(BC.p - 1 != 0);
         set_NF(false);
@@ -1346,6 +1359,8 @@ namespace Z80
         unsigned int result = *A - memory[HL.p];
         unsigned int half_result = (*A&0x0F) - (memory[HL.p]&0x0F);
 
+
+        cycles += 4;
         set_SF(twoscomp(result&0xFF) > 255);
         set_ZF((result&0xFF) == 0);
         set_HF(half_result&0x10);
@@ -1382,6 +1397,7 @@ namespace Z80
     {
         memory[DE.p] = memory[HL.p];
 
+        cycles += 4;
         set_HF(false);
         set_POF(BC.p - 1 != 0);
         set_NF(false);
@@ -1396,6 +1412,7 @@ namespace Z80
         unsigned int result = *A - memory[HL.p];
         unsigned int half_result = (*A&0x0F) - (HL.p&0x0F);
 
+        cycles += 4; 
         set_SF(twoscomp(result) > 255);
         set_ZF(result == 0);
         set_HF(half_result&0x10);
@@ -1433,7 +1450,9 @@ namespace Z80
         do
         {
             ldi();
+            cycles -= 4;
         }while(BC.p != 0);
+        cycles += 5;
     }
 
     void Z80::cpir()
@@ -1441,7 +1460,9 @@ namespace Z80
         do
         {
             cpi();
+            cycles -= 4;
         }while(BC.p != 0 || *A != memory[HL.p]);
+        cycles += 5;
     }
 
     void Z80::inir()
@@ -1465,7 +1486,9 @@ namespace Z80
         do
         {
             ldd();
+            cycles -= 4;
         }while(BC.p != 0);
+        cycles += 5;
     }
 
     void Z80::cpdr()
@@ -1473,8 +1496,10 @@ namespace Z80
         do
         {
             cpd();
+            cycles -= 4;
         } while(BC.p != 0 || *A != memory[HL.p]);
         /* La documentation n'est pas claire, on ne sait pas si c'est un or ou un and pour la condition */
+        cycles += 5;
     }
 
     void Z80::indr()
@@ -1516,6 +1541,8 @@ namespace Z80
         set_HF(false);
         set_POF(parity_check(*m));
         set_NF(false);
+
+        cycles += 2;
     }
 
     void Z80::rr(uint8_t* m)
@@ -1529,6 +1556,8 @@ namespace Z80
         set_HF(false);
         set_POF(parity_check(*m));
         set_NF(false);
+
+        cycles += 2;
     }
 
     void Z80::sla(uint8_t* m)
@@ -1554,16 +1583,19 @@ namespace Z80
         set_ZF(*m & (0x1 << *m));
         set_HF(true);
         set_NF(false);
+        cycles += 2;
     }
 
     void Z80::res(uint8_t b, uint8_t* m)
     {
         *m &= ~(0x1 << b);
+        cycles += 4;
     }
 
     void Z80::set(uint8_t b, uint8_t* m)
     {
         *m |= (0x1 << b);
+        cycles += 2;
     }
 
     void Z80::pop(uint16_t& dst)
