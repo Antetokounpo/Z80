@@ -620,7 +620,8 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xED:
-                interpret_extd(rom[++pc]); /* Incremente le Program Counter en fetchant */
+                pc++;
+                interpret_extd(get_operand(1)); /* Incremente le Program Counter en fetchant */
                 break;
             case 0xEE:
                 bitwise_xor(get_operand(1));
@@ -1098,9 +1099,11 @@ namespace Z80
     void Z80::step()
     {
         uint8_t opcode;
-        clock_t c = clock();
+        std::chrono::steady_clock::time_point t1;
+        std::chrono::duration<double> time_span;
 
-        for(cycles = 0; cycles<cpu_frequency/refresh_rate;)
+        t1 = std::chrono::steady_clock::now();
+        for(cycles = 0; cycles<cpu_frequency/refresh_rate;) /* Number of cycles for one frame */
         {
             if(pc >= rom_size)
             {
@@ -1110,6 +1113,8 @@ namespace Z80
             opcode = fetch(0);
             execute(opcode);
         }
+        time_span = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - t1);
+        std::this_thread::sleep_for(std::chrono::microseconds(1000000/refresh_rate)-time_span);
     }
 
     void Z80::interrupt()
@@ -1147,7 +1152,7 @@ namespace Z80
         set_POF(parity_check(result));
         set_HF(true);
         set_ZF((result & 0xFF) == 0);
-        set_SF(twoscomp(result) & 0x80);
+        set_SF(result & 0x80);
 
         *A = result;
         cycles += 1;
@@ -1162,7 +1167,7 @@ namespace Z80
         set_POF(parity_check(result));
         set_HF(false);
         set_ZF((result & 0xFF) == 0);
-        set_SF(twoscomp(result) & 0x80);
+        set_SF(result & 0x80);
 
         *A = result;
         cycles += 1;
@@ -1176,7 +1181,7 @@ namespace Z80
         set_POF(parity_check(result));
         set_HF(false);
         set_ZF((result & 0xFF) == 0);
-        set_SF(twoscomp(result) & 0x80);
+        set_SF(result & 0x80);
 
         *A = result;
         cycles += 1;
@@ -1194,7 +1199,7 @@ namespace Z80
         set_HF(half_result & 0x10);
         set_F5(0x1 << 5 & result);
         set_ZF((result & 0xFF) == 0);
-        set_SF(twoscomp(result) & 0x80);
+        set_SF(result & 0x80);
 
         cycles += 1;
     }
@@ -1316,12 +1321,13 @@ namespace Z80
         *A = (*A & 0xF0) | (memory[HL.p] & 0x0F);
         memory[HL.p] = (memory[HL.p] >> 4) | (low_nibble << 4);
 
-        set_SF(twoscomp(*A) > 255);
+        set_SF(*A & 0x80);
         set_ZF(*A == 0);
         set_HF(false);
         set_POF(parity_check(*A));
         set_NF(false);
         /* Carry flag is not affected */
+        cycles += 5;
     }
 
     void Z80::rld()
@@ -1333,12 +1339,14 @@ namespace Z80
         *A = (*A & 0xF0) | high_nibble;
         memory[HL.p] = (memory[HL.p] & 0xF0) | low_nibble;
 
-        set_SF(twoscomp(*A) > 255);
+        set_SF(*A & 0x80);
         set_ZF(*A == 0);
         set_HF(false);
         set_POF(parity_check(*A));
         set_NF(false);
         /* Carry flag is not affected */
+
+        cycles += 5;
     }
 
     void Z80::ldi()
@@ -1361,7 +1369,7 @@ namespace Z80
 
 
         cycles += 4;
-        set_SF(twoscomp(result&0xFF) > 255);
+        set_SF(result & 0x80);
         set_ZF((result&0xFF) == 0);
         set_HF(half_result&0x10);
         set_POF(BC.p - 1 != 0);
@@ -1413,7 +1421,7 @@ namespace Z80
         unsigned int half_result = (*A&0x0F) - (HL.p&0x0F);
 
         cycles += 4; 
-        set_SF(twoscomp(result) > 255);
+        set_SF(result & 0x80);
         set_ZF(result == 0);
         set_HF(half_result&0x10);
         set_POF(BC.p - 1 != 0);
@@ -1488,6 +1496,7 @@ namespace Z80
             ldd();
             cycles -= 4;
         }while(BC.p != 0);
+        set_POF(false);
         cycles += 5;
     }
 
@@ -1536,7 +1545,7 @@ namespace Z80
         *m = (*m << 1) | (get_flag(0));
         set_CF(msb);
 
-        set_SF(twoscomp(*m) > 255);
+        set_SF(*m & 0x80);
         set_ZF(*m == 0);
         set_HF(false);
         set_POF(parity_check(*m));
@@ -1551,7 +1560,7 @@ namespace Z80
         *m = (*m >> 1) | (get_flag(0) << 7);
         set_CF(lsb);
 
-        set_SF(twoscomp(*m) > 255);
+        set_SF(*m & 0x80);
         set_ZF(*m == 0);
         set_HF(false);
         set_POF(parity_check(*m));

@@ -10,9 +10,18 @@ namespace Z80
     template <class T, class U>
     void Z80::add(T& dst, U src)
     {
-        if(sizeof(T) == 2) /* 16 bit operations don't affect flags */
+        if(sizeof(T) == 2)
         {
-            dst = dst + src;
+            unsigned int result = dst + src;
+            unsigned int half_result = (dst&0xFF) + (src&0xFF);
+
+            set_HF(half_result & 0x1000);
+            set_NF(false);
+            set_CF(result > 0xFFFF);
+
+            dst = result;
+
+            cycles += 3;
             return;
         }
 
@@ -26,14 +35,22 @@ namespace Z80
         set_HF(half_result & 0x10);
         set_F5(0x1 << 5 & result);
         set_ZF((result & 0xFF) == 0);
-        set_SF(twoscomp(result) & 0x80);
+        set_SF(result & 0x80);
 
         dst = result;
+
+        cycles += 1;
     }
 
     template <class T>
     void Z80::inc(T& dst)
     {
+        if(sizeof(T) == 2)
+        {
+            dst += 1;
+            cycles += 1;
+            return;
+        }
         add(dst, 1);
     }
 
@@ -41,6 +58,13 @@ namespace Z80
     void Z80::adc(T& dst, U src)
     {
         add(dst, src+get_flag(0));
+        if(sizeof(T) == 2)
+        {
+            set_SF(dst & 0x800);
+            set_ZF(dst == 0);
+            set_POF(twoscomp(dst) > 0xFFFF);
+            cycles += 1;
+        }
     }
 
     template <class T, class U>
@@ -58,7 +82,7 @@ namespace Z80
         set_HF(half_result & 0x10);
         set_F5(0x1 << 5 & result);
         set_ZF((result & 0xFF) == 0);
-        set_SF(twoscomp(result) & 0x80);
+        set_SF(result & 0x80);
 
         dst = result;
     }
@@ -76,7 +100,7 @@ namespace Z80
     }
 
     template<class T>
-    T Z80::onescomp(T bin)
+    unsigned int Z80::onescomp(T bin)
     {
         for(unsigned int i = 0; i<sizeof(bin)*8; ++i)
         {
@@ -91,7 +115,7 @@ namespace Z80
     }
 
     template<class T>
-    T Z80::twoscomp(T bin)
+    unsigned int Z80::twoscomp(T bin)
     {
         return onescomp(bin)+1;
     }
