@@ -3,7 +3,6 @@ namespace Z80
     template <class T, class U>
     void Z80::ld(T& dst, U src)
     {
-        cycles += 1;
         dst = src;
     }
 
@@ -21,7 +20,6 @@ namespace Z80
 
             dst = result;
 
-            cycles += 3;
             return;
         }
 
@@ -38,8 +36,6 @@ namespace Z80
         set_SF(result & 0x80);
 
         dst = result;
-
-        cycles += 1;
     }
 
     template <class T>
@@ -48,7 +44,6 @@ namespace Z80
         if(sizeof(T) == 2)
         {
             dst += 1;
-            cycles += 1;
             return;
         }
         add(dst, 1);
@@ -63,7 +58,6 @@ namespace Z80
             set_SF(dst & 0x800);
             set_ZF(dst == 0);
             set_POF(twoscomp(dst) > 0xFFFF);
-            cycles += 1;
         }
     }
 
@@ -72,7 +66,10 @@ namespace Z80
     {
         unsigned int result = dst - src;
         if(sizeof(T) == 2)
+        {
             dst = result;
+            return;
+        }
         unsigned int half_result = (dst & 0x0F) - (src & 0x0F);
 
         set_CF(result > 255);
@@ -90,6 +87,11 @@ namespace Z80
     template <class T>
     void Z80::dec(T& dst)
     {
+        if(sizeof(T) == 2)
+        {
+            dst -= 1;
+            return;
+        }
         arithmetic_sub(dst, 1);
     }
 

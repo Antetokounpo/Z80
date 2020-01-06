@@ -132,7 +132,7 @@ namespace Z80
             template<class T> unsigned int onescomp(T bin);
             template<class T> unsigned int twoscomp(T bin);
             bool parity_check(unsigned int bin);
-            uint16_t get_operand(unsigned int offset);
+            uint16_t get_operand(int offset);
             uint8_t& get_memory(uint16_t address);
 
             void interpret_extd(uint8_t opcode);

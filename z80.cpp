@@ -58,201 +58,265 @@ namespace Z80
         switch (opcode)
         {
             case 0x00: /* nop */
-                pc++; cycles += 1;break;
+                cycles += 4;
+                pc++; break;
             case 0x01: /* ld bc, ** */
+                cycles += 10;
                 ld(BC.p, get_operand(2));
                 pc += 3; break;
             case 0x02: /* ld (bc), a */
+                cycles += 7;
                 ld(get_memory(BC.p), *A);
                 pc++; break;
             case 0x03: /* inc bc */
+                cycles += 6;
                 inc(BC.p);
                 pc++; break;
             case 0x04: /* inc b */
+                cycles += 4;
                 inc(*B);
                 pc++; break;
             case 0x05: /* dec b */
+                cycles += 4;
                 dec(*B);
-                set_ZF(*B == 0);
                 pc++; break;
             case 0x06: /* ld b, * */
+                cycles += 7;
                 ld(*B, get_operand(1));
                 pc += 2; break;
             case 0x07: /* rlca */
+                cycles += 4;
                 rlca();
                 pc++; break;
             case 0x08: /* ex af, af' */
+                cycles += 4;
                 std::swap(AF.p, AF_.p);
                 pc++; break;
             case 0x09: /* add hl, bc */
+                cycles += 11;
                 add(HL.p, BC.p);
                 pc++; break;
             case 0x0A: /* ld a, (bc) */
+                cycles += 7;
                 ld(*A, memory[BC.p]);
                 pc++; break;
             case 0x0B: /* dec bc */
+                cycles += 6;
                 dec(BC.p);
                 pc++; break;
             case 0x0C: /* inc c */
+                cycles += 4;
                 inc(*C);
                 pc++; break;
             case 0x0D: /* dec c */
+                cycles += 4;
                 dec(*C);
                 pc++; break;
             case 0x0E: /* ld c, * */
+                cycles += 7;
                 ld(*C, get_operand(1));
                 pc += 2; break;
             case 0x0F: /* rrca */
+                cycles += 4;
                 rrca();
                 pc++; break;
             
             case 0x10: /* djnz */
+                cycles += 13/8;
                 djnz((int)get_operand(1));
                 break;
             case 0x11: /* ld de, ** */
+                cycles += 10;
                 ld(DE.p, get_operand(2));
                 pc += 3; break;
             case 0x12: /* ld (de), a */
+                cycles += 7;
                 ld(memory[DE.p], *A);
                 pc++; break;
             case 0x13: /* inc de */
+                cycles += 6;
                 inc(DE.p);
                 pc++; break;
             case 0x14: /* inc d */
+                cycles += 4;
                 inc(*D);
                 pc++; break;
             case 0x15: /* dec d */
+                cycles += 4;
                 dec(*D);
                 pc++; break;
             case 0x16: /* ld d, * */
+                cycles += 7;
                 ld(*D, get_operand(1));
                 pc += 2; break;
             case 0x17: /* rla */
+                cycles += 4;
                 rla();
                 pc++; break;
             case 0x18: /* jr * */
+                cycles += 12;
                 pc += (int8_t)get_operand(1); break;
             case 0x19: /* add hl, de */
+                cycles += 11;
                 add(HL.p, DE.p);
                 pc++; break;
             case 0x1A: /* ld a, (de) */
+                cycles += 7;
                 ld(*A, memory[DE.p]);
                 pc++; break;
             case 0x1B: /* dec de */
+                cycles += 6;
                 dec(DE.p);
                 pc++; break;
             case 0x1C: /* inc e */
+                cycles += 4;
                 inc(*E);
                 pc++; break;
             case 0x1D: /* dec e */
+                cycles += 4;
                 dec(*E);
                 pc++; break;
             case 0x1E: /* ld e, * */
+                cycles += 7;
                 ld(*E, get_operand(1));
                 pc += 2; break;
             case 0x1F: /* rra */
+                cycles += 4;
                 rra();
                 pc++; break;
             
             case 0x20: /* jr nz, * */
-                if(!(*F & 0x40)) pc += (int8_t)get_operand(1);
-                else pc += 2;;
+                cycles += 12/7;
+                if(!(*F & 0x40)) {pc += (int8_t)get_operand(1);}
+                else {pc += 2;}
                 break;
             case 0x21: /* ld hl, ** */
+                cycles += 10;
                 ld(HL.p, get_operand(2));
                 pc += 3; break;
             case 0x22: /* ld (**), hl */
-                ld(memory[get_operand(2)], HL.r[0]);
-                ld(memory[get_operand(2)+1], HL.r[1]);
+                cycles += 16;
+                ld(memory[get_operand(2)], HL.r[1]);
+                ld(memory[get_operand(2)+1], HL.r[0]);
                 pc += 3; break;
             case 0x23: /* inc hl */
+                cycles += 6;
                 inc(HL.p);
                 pc++; break;
             case 0x24: /* inc h */
+                cycles += 4;
                 inc(HL.r[0]);
                 pc++; break;
             case 0x25: /* dec h */
+                cycles += 4;
                 dec(HL.r[0]);
                 pc++; break;
             case 0x26: /* ld h, * */
-                ld(HL.r[0], get_operand(1));
+                cycles += 7;
+                ld(*H, get_operand(1));
                 pc += 2; break;
             case 0x27: /* daa */
+                cycles += 4;
                 daa();
                 break;
             case 0x28: /* jr z, * */
+                cycles += 12/7;
                 if(*F & 0x40) pc += (int)get_operand(1);
                 else pc += 2;
                 break;
             case 0x29: /* add hl, hl */
+                cycles += 11;
                 add(HL.p, HL.p);
                 pc++; break;
             case 0x2A: /* ld hl, (**) */
-                ld(HL.r[0], memory[pc+1]);
-                ld(HL.r[1], memory[pc+2]);
+                cycles += 16;
+                ld(HL.r[1], memory[get_operand(1)]);
+                ld(HL.r[0], memory[get_operand(1) + 1]);
                 pc += 3; break;
             case 0x2B: /* dec hl */
+                cycles += 6;
                 dec(HL.p);
                 pc++; break;
             case 0x2C: /* inc l */
+                cycles += 4;
                 inc(*L);
                 pc++; break;
             case 0x2D: /* dec l */
+                cycles += 4;
                 dec(*L);
                 pc++; break;
             case 0x2E: /* ld l, * */
+                cycles += 7;
                 ld(*L, get_operand(1));
                 pc += 2; break;
             case 0x2F: /* cpl */
+                cycles += 4;
                 cpl();
                 pc++; break;
             
             case 0x30: /* jr nc, * */
-                if(!((*F & 0x1))) pc += (int)get_operand(1);
+                cycles += 12/7;
+                if(!((*F & 0x1))) {pc += (int)get_operand(1); cycles += 3;}
+                else cycles += 7;
                 pc += 2; break;
             case 0x31: /* ld sp, ** */
+                cycles += 10;
                 ld(sp, get_operand(2));
                 pc += 3; break;
             case 0x32: /* ld (**), a */
+                cycles += 13;
                 ld(memory[get_operand(2)], *A);
                 pc += 3; break;
             case 0x33:
+                cycles += 6;
                 inc(sp);
                 pc++; break;
             case 0x34:
+                cycles += 11;
                 inc(memory[HL.p]);
                 pc++; break;
             case 0x35:
+                cycles += 11;
                 dec(memory[HL.p]);
                 pc++; break;
             case 0x36:
+                cycles += 10;
                 ld(memory[HL.p], get_operand(1));
                 pc += 2; break;
             case 0x37: /* scf */
+                cycles += 4;
                 set_CF(true);
                 pc++; break;
             case 0x38: /* jr c, * */
-                if(*F & 0x1) pc += (int)get_operand(1);
+                cycles += 12/7;
+                if(*F & 0x1) {pc += (int)get_operand(1);}
                 pc += 2; break;
             case 0x39:
+                cycles += 11;
                 add(HL.p, sp);
                 pc++; break;
             case 0x3A:
+                cycles += 13;
                 ld(*A, memory[get_operand(2)]);
                 pc += 3; break;
             case 0x3B:
+                cycles += 6;
                 dec(sp);
                 pc++; break;
             case 0x3C:
+                cycles += 4;
                 inc(*A);
                 pc++; break;
             case 0x3D:
+                cycles += 4;
                 dec(*A);
                 pc++; break;
             case 0x3E:
+                cycles += 7;
                 ld(*A, get_operand(1));
                 pc += 2; break;
             case 0x3F: /* ccf */
+                cycles += 4;
                 set_CF(!(*F & 0x1));
                 pc++; break;
             
@@ -329,6 +393,7 @@ namespace Z80
                 ld(memory[HL.p], *(registers[low_nibble - 0x8]));
                 pc++; break;
             case 0x76: /* halt */
+                cycles += 4;
                 pins[17] = true;
                 break;
             case 0x78:
@@ -427,191 +492,268 @@ namespace Z80
                 pc++; break;
 
             case 0xC0: /* ret nz */
+                cycles += 11/5;
                 if(!(get_flag(6))) pop(pc);
                 else pc++;
                 break;
             case 0xC1:
+                cycles += 10;
                 pop(BC.p);
                 pc++; break;
-            case 0xC2:
+            case 0xC2: /* jp nz, ** */
+                cycles += 10;
                 if(!(get_flag(6)))
+                {
                     pc = get_operand(2);
+                }
                 else
+                {
                     pc += 3;
+                }
                 break;
-            case 0xC3:
+            case 0xC3: /* jp ** */
+                cycles += 10;
                 pc = get_operand(2);
                 break;
-            case 0xC4:
+            case 0xC4: /* call nz, ** */
+                cycles += 17/10;
                 if(!(get_flag(6)))
                 {
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
                     pc += 3;
+                }
                 break;
             case 0xC5:
+                cycles += 11;
                 push(BC.p);
                 pc++; break;
             case 0xC6:
+                cycles += 7;
                 add(*A, get_operand(1));
                 pc += 2; break;
             case 0xC7:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x00; break;
-            case 0xC8:
+            case 0xC8: /* ret z */
+                cycles += 11/5;
                 if(get_flag(6)) pop(pc);
-                else pc++;
+                else {pc++;}
                 break;
             case 0xC9:
+                cycles += 10;
                 pop(pc);
                 break;
-            case 0xCA:
+            case 0xCA: /* jp z, ** */
+                cycles += 10;
                 if(get_flag(6))
+                {
                     pc = get_operand(2);
+                }
                 else
+                {
                     pc += 3;
+                }
                 break;
             case 0xCB:
                 interpret_bits(rom[++pc]);
                 pc++; break;
-            case 0xCC:
+            case 0xCC: /* call z, ** */
+                cycles += 17/10;
+
                 if(get_flag(6))
                 {
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
                     pc += 3;
+                }
                 break;
-            case 0xCD:
+            case 0xCD: /* call ** */
+                cycles += 17;
                 push(pc+3);
                 pc = get_operand(2);
                 break;
             case 0xCE:
+                cycles += 7;
                 add(*A, get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xCF:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x08; break;
 
-            case 0xD0:
+            case 0xD0: /* ret nc */
+                cycles += 11/5;
+
                 if(!(get_flag(0))) pop(pc);
-                else pc++;
+                else {pc++;}
                 break;
             case 0xD1:
+                cycles += 10;
                 pop(DE.p);
                 pc++; break;
-            case 0xD2:
+            case 0xD2: /* jp nc, ** */
+                cycles += 10;
                 if(!(get_flag(0)))
+                {
                     pc = get_operand(2);
+                }
                 else
+                {
                     pc += 3;
+                }
                 break;
             case 0xD3: /* out (*), a */
+                cycles += 11;
                 OUT(get_operand(1), *A);
                 pc += 2;break;
-            case 0xD4:
+            case 0xD4: /* call nc, ** */
+                cycles += 17/10;
+
                 if(!(get_flag(0)))
                 {
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
                     pc += 3;
+                }
                 break;
             case 0xD5:
+                cycles += 11;
                 push(DE.p);
                 pc++; break;
             case 0xD6:
+                cycles += 7;
                 sub(get_operand(1));
                 pc += 2; break;
             case 0xD7:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x10; break;
-            case 0xD8:
+            case 0xD8: /* ret c */
+                cycles += 11/5;
                 if(get_flag(0)) pop(pc);
-                else pc++;
+                else {pc++;} 
                 break;
             case 0xD9:
+                cycles += 4;
                 std::swap(BC.p, BC_.p);
                 std::swap(DE.p, DE_.p);
                 std::swap(HL.p, HL_.p);
                 pc++; break;
-            case 0xDA:
+            case 0xDA: /* jp c, * */
+                cycles += 10;
                 if(get_flag(0))
+                {
                     pc = get_operand(2);
-                 else
+                }
+                else
+                {
                     pc += 3;
-                 break;
+                }
+                break;
             case 0xDB: /* in a, (*) */
+                cycles += 11;
                 IN(*A, get_operand(1));
                 pc += 2; break;
-            case 0xDC:
+            case 0xDC: /* call c, * */
+                cycles += 17/10;
                 if(get_flag(0))
                 {
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
                     pc += 3;
+                }
                 break;
             case 0xDD:
+                cycles += 19;
                 interpret_ix(rom[++pc]);
                 break;
             case 0xDE:
+                cycles += 7;
                 sub(get_operand(1) + get_flag(0));
                 pc += 2; break;
             case 0xDF:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x18; break;
 
-            case 0xE0:
+            case 0xE0: /* ret po */
+                cycles += 11/5;
                 if(!get_flag(2)) pop(pc);
-                else pc++;
+                else {pc++;}
                 break;
             case 0xE1:
+                cycles += 10;
                 pop(HL.p);
                 pc++; break;
-            case 0xE2:
+            case 0xE2: /* jp po, ** */
+                cycles += 10;
                 if(!get_flag(2))
+                {
                     pc = get_operand(2);
-                else
+                }
+                else{
                     pc += 3;
+                }
                 break;
-            case 0xE3:
+            case 0xE3: /* ex (sp), hl */
+                cycles += 19;
                 memory[sp] = HL.r[0];
                 memory[sp+1] = HL.r[1];
                 pc++; break;
-            case 0xE4:
+            case 0xE4: /* call po ** */
+                cycles += 17/10;
                 if(!get_flag(2))
                 {
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
                     pc += 3;
+                }
                 break;
             case 0xE5:
+                cycles += 11;
                 push(HL.p);
                 pc++; break;
             case 0xE6:
+                cycles += 7;
                 bitwise_and(get_operand(1));
                 pc += 2; break;
-            case 0xE7:
+            case 0xE7: /* rst 20h */
+                cycles += 11;
                 push(pc+1);
                 pc = 0x20; break;
-            case 0xE8:
+            case 0xE8: /* ret pe */
+                cycles += 11/5;
                 if(get_flag(2)) pop(pc);
-                else pc++;
+                else {pc++;} 
                 break;
             case 0xE9: /* jp (hl) */
+                cycles += 4;
                  pc = memory[HL.p];
                  break;
-            case 0xEA:
+            case 0xEA: /* jp pe, ** */
+                cycles += 10;
                 if(get_flag(2))
                     pc = get_operand(2);
+                else pc += 3;
                 break;
             case 0xEB:
+                cycles += 4;
                 std::swap(DE.p, HL.p);
                 pc++; break;
             case 0xEC:
+                cycles += 17/10;
                 if(get_flag(2))
                 {
                     push(pc+3);
@@ -620,33 +762,41 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xED:
+                cycles += 15;
                 pc++;
                 interpret_extd(get_operand(1)); /* Incremente le Program Counter en fetchant */
                 break;
             case 0xEE:
+                cycles += 7;
                 bitwise_xor(get_operand(1));
                 pc += 2; break;
             case 0xEF:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x28; break;
 
             case 0xF0:
+                cycles += 11/5;
                 if(!get_flag(7)) pop(pc);
                 else pc++;
                 break;
             case 0xF1:
+                cycles += 10;
                 pop(AF.p);
                 pc++; break;
             case 0xF2:
+                cycles += 10;
                 if(!get_flag(7))
                     pc = get_operand(2);
                 else
                     pc += 3;
                 break;
             case 0xF3: /* di */
+                cycles += 4;
                 di();
                 pc++; break;
             case 0xF4:
+                cycles += 17/10;
                 if(!get_flag(7))
                 {
                     push(pc+3);
@@ -655,33 +805,41 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xF5:
+                cycles += 11;
                 push(AF.p);
                 pc++; break;
             case 0xF6:
+                cycles += 7;
                 bitwise_or(get_operand(1));
                 pc += 2; break;
             case 0xF7:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x30; break;
             case 0xF8:
+                cycles += 11/5;
                 if(get_flag(7)) pop(pc);
                 else pc++;
                 break;
             case 0xF9:
+                cycles += 6;
                 ld(sp, HL.p);
                 pc++; break;
             case 0xFA:
+                cycles += 10;
                 if(get_flag(7))
                     pc = get_operand(2);
                 else
                     pc += 3;
                 break;
             case 0xFB: /* ei */
+                cycles += 4;
                 di();
                 pc++; step(); /* During the execution of this instruction and the following instruction, maskable interrupts are disabled. */
                 ei();
                 pc++; break;
             case 0xFC:
+                cycles += 17/10;
                 if(get_flag(7))
                 {
                     push(pc+3);
@@ -690,12 +848,15 @@ namespace Z80
                     pc += 3;
                 break;
             case 0xFD:
+                cycles += 19;
                 // TODO IY
                 break;
             case 0xFE:
+                cycles += 7;
                 cp(get_operand(1));
                 pc += 2; break;
             case 0xFF:
+                cycles += 11;
                 push(pc+1);
                 pc = 0x38; break;
 
@@ -1127,20 +1288,17 @@ namespace Z80
     {
         iff1 = true;
         iff2 = true;
-        cycles += 1;
     }
 
     void Z80::di()
     {
         iff1 = false;
         iff2 = false;
-        cycles += 1;
     }
 
     void Z80::sub(unsigned int src)
     {
         arithmetic_sub(*A, src);
-        cycles += 1;
     }
 
     void Z80::bitwise_and(unsigned int src)
@@ -1155,7 +1313,6 @@ namespace Z80
         set_SF(result & 0x80);
 
         *A = result;
-        cycles += 1;
     }
 
     void Z80::bitwise_xor(unsigned int src)
@@ -1170,7 +1327,6 @@ namespace Z80
         set_SF(result & 0x80);
 
         *A = result;
-        cycles += 1;
     }
 
     void Z80::bitwise_or(unsigned int src)
@@ -1184,7 +1340,6 @@ namespace Z80
         set_SF(result & 0x80);
 
         *A = result;
-        cycles += 1;
     }
 
     void Z80::cp(unsigned int src)
@@ -1201,7 +1356,6 @@ namespace Z80
         set_ZF((result & 0xFF) == 0);
         set_SF(result & 0x80);
 
-        cycles += 1;
     }
 
     bool Z80::parity_check(unsigned int bin)
@@ -1215,20 +1369,17 @@ namespace Z80
         return !(c % 2);
     }
 
-    uint16_t Z80::get_operand(unsigned int offset)
+    uint16_t Z80::get_operand(int offset)
     {
         if (offset == 1)
         {
-            cycles += 1;
             return fetch(1);
         }
-        cycles += 2;
         return fetch(2) << 8 | fetch(1);
     }
 
     uint8_t& Z80::get_memory(uint16_t address)
     {
-        cycles += 1;
         return memory[address];
     }
 
@@ -1241,7 +1392,6 @@ namespace Z80
         set_HF(false);
         set_NF(false);
         
-        cycles += 1;
     }
 
     void Z80::rla()
@@ -1257,7 +1407,6 @@ namespace Z80
         uint8_t lsb = 0x01 & *A;
         *A = (*A >> 1) | (lsb << 7);
         set_CF(bool(lsb));
-        cycles += 1;
     }
 
     void Z80::rra()
@@ -1287,7 +1436,6 @@ namespace Z80
             else
                 *A |= b; /* change 0 to 1 */
         }
-        cycles += 1;
     }
 
     void Z80::daa()
@@ -1311,7 +1459,6 @@ namespace Z80
             set_CF(true);
         }else
             set_CF(false);
-        cycles += 1;
     }
 
     void Z80::rrd()
@@ -1327,7 +1474,6 @@ namespace Z80
         set_POF(parity_check(*A));
         set_NF(false);
         /* Carry flag is not affected */
-        cycles += 5;
     }
 
     void Z80::rld()
@@ -1346,7 +1492,6 @@ namespace Z80
         set_NF(false);
         /* Carry flag is not affected */
 
-        cycles += 5;
     }
 
     void Z80::ldi()
@@ -1356,7 +1501,6 @@ namespace Z80
         HL.p++;
         BC.p--;
 
-        cycles += 4;
         set_HF(false);
         set_POF(BC.p - 1 != 0);
         set_NF(false);
@@ -1368,7 +1512,6 @@ namespace Z80
         unsigned int half_result = (*A&0x0F) - (memory[HL.p]&0x0F);
 
 
-        cycles += 4;
         set_SF(result & 0x80);
         set_ZF((result&0xFF) == 0);
         set_HF(half_result&0x10);
@@ -1405,7 +1548,6 @@ namespace Z80
     {
         memory[DE.p] = memory[HL.p];
 
-        cycles += 4;
         set_HF(false);
         set_POF(BC.p - 1 != 0);
         set_NF(false);
@@ -1420,7 +1562,6 @@ namespace Z80
         unsigned int result = *A - memory[HL.p];
         unsigned int half_result = (*A&0x0F) - (HL.p&0x0F);
 
-        cycles += 4; 
         set_SF(result & 0x80);
         set_ZF(result == 0);
         set_HF(half_result&0x10);
@@ -1458,9 +1599,7 @@ namespace Z80
         do
         {
             ldi();
-            cycles -= 4;
         }while(BC.p != 0);
-        cycles += 5;
     }
 
     void Z80::cpir()
@@ -1468,9 +1607,7 @@ namespace Z80
         do
         {
             cpi();
-            cycles -= 4;
         }while(BC.p != 0 || *A != memory[HL.p]);
-        cycles += 5;
     }
 
     void Z80::inir()
@@ -1494,10 +1631,8 @@ namespace Z80
         do
         {
             ldd();
-            cycles -= 4;
         }while(BC.p != 0);
         set_POF(false);
-        cycles += 5;
     }
 
     void Z80::cpdr()
@@ -1505,10 +1640,8 @@ namespace Z80
         do
         {
             cpd();
-            cycles -= 4;
         } while(BC.p != 0 || *A != memory[HL.p]);
         /* La documentation n'est pas claire, on ne sait pas si c'est un or ou un and pour la condition */
-        cycles += 5;
     }
 
     void Z80::indr()
@@ -1551,7 +1684,6 @@ namespace Z80
         set_POF(parity_check(*m));
         set_NF(false);
 
-        cycles += 2;
     }
 
     void Z80::rr(uint8_t* m)
@@ -1566,7 +1698,6 @@ namespace Z80
         set_POF(parity_check(*m));
         set_NF(false);
 
-        cycles += 2;
     }
 
     void Z80::sla(uint8_t* m)
@@ -1592,26 +1723,22 @@ namespace Z80
         set_ZF(*m & (0x1 << *m));
         set_HF(true);
         set_NF(false);
-        cycles += 2;
     }
 
     void Z80::res(uint8_t b, uint8_t* m)
     {
         *m &= ~(0x1 << b);
-        cycles += 4;
     }
 
     void Z80::set(uint8_t b, uint8_t* m)
     {
         *m |= (0x1 << b);
-        cycles += 2;
     }
 
     void Z80::pop(uint16_t& dst)
     {
        dst = memory[sp+1] << 8 | memory[sp];
        sp += 2;
-       cycles += 3;
     }
 
     void Z80::push(uint16_t src)
@@ -1619,7 +1746,6 @@ namespace Z80
         memory[sp-1] = src >> 8;
         memory[sp-2] = src & 0xFF;
         sp -= 2;
-        cycles += 3;
     }
 
     void Z80::set_flag(uint8_t flag, bool value)
