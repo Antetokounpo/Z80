@@ -123,7 +123,7 @@ namespace Z80
             
             case 0x10: /* djnz */
                 cycles += 13/8;
-                djnz((int)get_operand(1));
+                djnz((int)get_operand(1)); /* TODO signed value */
                 break;
             case 0x11: /* ld de, ** */
                 cycles += 10;
@@ -186,9 +186,8 @@ namespace Z80
                 pc++; break;
             
             case 0x20: /* jr nz, * */
-                cycles += 12/7;
-                if(!(*F & 0x40)) {pc += (int8_t)get_operand(1);}
-                else {pc += 2;}
+                if(!get_flag(6)) {cycles += 12; pc += static_cast<int8_t>(get_operand(1));}
+                else {cycles += 7; pc += 2;}
                 break;
             case 0x21: /* ld hl, ** */
                 cycles += 10;
@@ -220,9 +219,8 @@ namespace Z80
                 daa();
                 break;
             case 0x28: /* jr z, * */
-                cycles += 12/7;
-                if(*F & 0x40) pc += (int)get_operand(1);
-                else pc += 2;
+                if(get_flag(6)) {cycles += 12; pc += static_cast<int8_t>(get_operand(1));}
+                else {cycles += 7; pc += 2;}
                 break;
             case 0x29: /* add hl, hl */
                 cycles += 11;
@@ -255,8 +253,7 @@ namespace Z80
                 pc++; break;
             
             case 0x30: /* jr nc, * */
-                cycles += 12/7;
-                if(!((*F & 0x1))) {pc += (int)get_operand(1); cycles += 3;}
+                if(!get_flag(0)) {cycles += 12; pc += static_cast<int8_t>(get_operand(1));} 
                 else cycles += 7;
                 pc += 2; break;
             case 0x31: /* ld sp, ** */
@@ -288,8 +285,8 @@ namespace Z80
                 set_CF(true);
                 pc++; break;
             case 0x38: /* jr c, * */
-                cycles += 12/7;
-                if(*F & 0x1) {pc += (int)get_operand(1);}
+                if(get_flag(0)) {cycles += 12; pc += static_cast<int8_t>(get_operand(1));}
+                else cycles += 7;
                 pc += 2; break;
             case 0x39:
                 cycles += 11;
@@ -320,66 +317,78 @@ namespace Z80
                 set_CF(!(*F & 0x1));
                 pc++; break;
             
+            case 0x46:
+                cycles += 3;
             case 0x40:
             case 0x41:
             case 0x42:
             case 0x43:
             case 0x44:
             case 0x45:
-            case 0x46:
             case 0x47:
-                ld(*B, *(registers[low_nibble - 0x8]));
+                cycles += 4;
+                ld(*B, *(registers[low_nibble]));
                 pc++; break;
+            case 0x4E:
+                cycles += 3; 
             case 0x48:
             case 0x49:
             case 0x4A:
             case 0x4B:
             case 0x4C:
             case 0x4D:
-            case 0x4E:
             case 0x4F:
+                cycles += 4;
                 ld(*C, *(registers[low_nibble - 0x8]));
                 pc++; break;
             
+            case 0x56:
+                cycles += 3;
             case 0x50:
             case 0x51:
             case 0x52:
             case 0x53:
             case 0x54:
             case 0x55:
-            case 0x56:
             case 0x57:
-                ld(*D, *(registers[low_nibble - 0x8]));
+                cycles += 4;
+                ld(*D, *(registers[low_nibble]));
                 pc++; break;
+            case 0x5E:
+                cycles += 3; 
             case 0x58:
             case 0x59:
             case 0x5A:
             case 0x5B:
             case 0x5C:
             case 0x5D:
-            case 0x5E:
             case 0x5F:
+                cycles += 4;
                 ld(*E, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
+            case 0x66:
+                cycles += 3;
             case 0x60:
             case 0x61:
             case 0x62:
             case 0x63:
             case 0x64:
             case 0x65:
-            case 0x66:
             case 0x67:
-                ld(*H, *(registers[low_nibble - 0x8]));
+                cycles += 4;
+                ld(*H, *(registers[low_nibble]));
                 pc++; break;
+            case 0x6E:
+                cycles += 3;
             case 0x68:
             case 0x69:
             case 0x6A:
             case 0x6B:
             case 0x6C:
             case 0x6D:
-            case 0x6E:
             case 0x6F:
+                cycles += 4;
                 ld(*L, *(registers[low_nibble - 0x8]));
                 pc++; break;
                 
@@ -390,111 +399,129 @@ namespace Z80
             case 0x74:
             case 0x75:
             case 0x77:
-                ld(memory[HL.p], *(registers[low_nibble - 0x8]));
+                cycles += 7;
+                ld(memory[HL.p], *(registers[low_nibble]));
                 pc++; break;
             case 0x76: /* halt */
                 cycles += 4;
                 pins[17] = true;
                 break;
+            case 0x7E:
+                cycles += 3;
             case 0x78:
             case 0x79:
             case 0x7A:
             case 0x7B:
             case 0x7C:
             case 0x7D:
-            case 0x7E:
             case 0x7F:
+                cycles += 4;
                 ld(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
+            case 0x86:
+                cycles += 3;
             case 0x80:
             case 0x81:
             case 0x82:
             case 0x83:
             case 0x84:
             case 0x85:
-            case 0x86:
             case 0x87:
-                add(*A, *(registers[low_nibble - 0x8]));
+                cycles += 4;
+                add(*A, *(registers[low_nibble]));
                 pc++; break;
+            case 0x8E:
+                cycles += 3;
             case 0x88:
             case 0x89:
             case 0x8A:
             case 0x8B:
             case 0x8C:
             case 0x8D:
-            case 0x8E:
             case 0x8F:
+                cycles += 4;
                 adc(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
+            case 0x96:
+                cycles += 3;
             case 0x90:
             case 0x91:
             case 0x92:
             case 0x93:
             case 0x94:
             case 0x95:
-            case 0x96:
             case 0x97:
-                sub(*(registers[low_nibble - 0x8]));
+                cycles += 4;
+                sub(*(registers[low_nibble]));
                 pc++; break;
+            case 0x9E:
+                cycles += 3;
             case 0x98:
             case 0x99:
             case 0x9A:
             case 0x9B:
             case 0x9C:
             case 0x9D:
-            case 0x9E:
             case 0x9F:
+                cycles += 4;
                 sbc(*A, *(registers[low_nibble - 0x8]));
                 pc++; break;
 
+            case 0xA6:
+                cycles += 3;
             case 0xA0:
             case 0xA1:
             case 0xA2:
             case 0xA3:
             case 0xA4:
             case 0xA5:
-            case 0xA6:
             case 0xA7:
-                bitwise_and(*(registers[low_nibble - 0x8]));
+                cycles += 4;
+                bitwise_and(*(registers[low_nibble]));
                 pc++; break;
+            case 0xAE:
+                cycles += 3;
             case 0xA8:
             case 0xA9:
             case 0xAA:
             case 0xAB:
             case 0xAC:
             case 0xAD:
-            case 0xAE:
             case 0xAF:
+                cycles += 4;
                 bitwise_xor(*(registers[low_nibble - 0x8]));
                 pc++; break;
 
+            case 0xB6:
+                cycles += 3;
             case 0xB0:
             case 0xB1:
             case 0xB2:
             case 0xB3:
             case 0xB4:
             case 0xB5:
-            case 0xB6:
             case 0xB7:
-                bitwise_or(*(registers[low_nibble - 0x8]));
+                cycles += 4;
+                bitwise_or(*(registers[low_nibble]));
                 pc++; break;
+            case 0xBE:
+                cycles += 3;
             case 0xB8:
             case 0xB9:
             case 0xBA:
             case 0xBB:
             case 0xBC:
             case 0xBD:
-            case 0xBE:
             case 0xBF:
+                cycles += 4;
                 cp(*(registers[low_nibble - 0x8]));
                 pc++; break;
 
             case 0xC0: /* ret nz */
-                cycles += 11/5;
-                if(!(get_flag(6))) pop(pc);
-                else pc++;
+                if(!(get_flag(6))) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;}
                 break;
             case 0xC1:
                 cycles += 10;
@@ -516,13 +543,14 @@ namespace Z80
                 pc = get_operand(2);
                 break;
             case 0xC4: /* call nz, ** */
-                cycles += 17/10;
                 if(!(get_flag(6)))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
                 {
+                    cycles += 10;
                     pc += 3;
                 }
                 break;
@@ -539,9 +567,8 @@ namespace Z80
                 push(pc+1);
                 pc = 0x00; break;
             case 0xC8: /* ret z */
-                cycles += 11/5;
-                if(get_flag(6)) pop(pc);
-                else {pc++;}
+                if(get_flag(6)) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;}
                 break;
             case 0xC9:
                 cycles += 10;
@@ -559,17 +586,18 @@ namespace Z80
                 }
                 break;
             case 0xCB:
-                interpret_bits(rom[++pc]);
+                pc++;
+                interpret_bits(fetch(0));
                 pc++; break;
             case 0xCC: /* call z, ** */
-                cycles += 17/10;
-
                 if(get_flag(6))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
                 {
+                    cycles += 10;
                     pc += 3;
                 }
                 break;
@@ -588,10 +616,8 @@ namespace Z80
                 pc = 0x08; break;
 
             case 0xD0: /* ret nc */
-                cycles += 11/5;
-
-                if(!(get_flag(0))) pop(pc);
-                else {pc++;}
+                if(!(get_flag(0))) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;}
                 break;
             case 0xD1:
                 cycles += 10;
@@ -613,14 +639,14 @@ namespace Z80
                 OUT(get_operand(1), *A);
                 pc += 2;break;
             case 0xD4: /* call nc, ** */
-                cycles += 17/10;
-
                 if(!(get_flag(0)))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
                 {
+                    cycles += 10;
                     pc += 3;
                 }
                 break;
@@ -637,9 +663,8 @@ namespace Z80
                 push(pc+1);
                 pc = 0x10; break;
             case 0xD8: /* ret c */
-                cycles += 11/5;
-                if(get_flag(0)) pop(pc);
-                else {pc++;} 
+                if(get_flag(0)) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;} 
                 break;
             case 0xD9:
                 cycles += 4;
@@ -663,13 +688,14 @@ namespace Z80
                 IN(*A, get_operand(1));
                 pc += 2; break;
             case 0xDC: /* call c, * */
-                cycles += 17/10;
                 if(get_flag(0))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
                 {
+                    cycles += 10;
                     pc += 3;
                 }
                 break;
@@ -687,9 +713,8 @@ namespace Z80
                 pc = 0x18; break;
 
             case 0xE0: /* ret po */
-                cycles += 11/5;
-                if(!get_flag(2)) pop(pc);
-                else {pc++;}
+                if(!get_flag(2)) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;}
                 break;
             case 0xE1:
                 cycles += 10;
@@ -711,13 +736,14 @@ namespace Z80
                 memory[sp+1] = HL.r[1];
                 pc++; break;
             case 0xE4: /* call po ** */
-                cycles += 17/10;
                 if(!get_flag(2))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
                 {
+                    cycles += 10;
                     pc += 3;
                 }
                 break;
@@ -734,14 +760,13 @@ namespace Z80
                 push(pc+1);
                 pc = 0x20; break;
             case 0xE8: /* ret pe */
-                cycles += 11/5;
-                if(get_flag(2)) pop(pc);
-                else {pc++;} 
+                if(get_flag(2)) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;} 
                 break;
             case 0xE9: /* jp (hl) */
                 cycles += 4;
-                 pc = memory[HL.p];
-                 break;
+                pc = memory[HL.p];
+                break;
             case 0xEA: /* jp pe, ** */
                 cycles += 10;
                 if(get_flag(2))
@@ -753,18 +778,20 @@ namespace Z80
                 std::swap(DE.p, HL.p);
                 pc++; break;
             case 0xEC:
-                cycles += 17/10;
                 if(get_flag(2))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
+                    cycles += 10;
                     pc += 3;
+                }
                 break;
             case 0xED:
-                cycles += 15;
                 pc++;
-                interpret_extd(get_operand(1)); /* Incremente le Program Counter en fetchant */
+                interpret_extd(get_operand(1));
                 break;
             case 0xEE:
                 cycles += 7;
@@ -776,9 +803,8 @@ namespace Z80
                 pc = 0x28; break;
 
             case 0xF0:
-                cycles += 11/5;
-                if(!get_flag(7)) pop(pc);
-                else pc++;
+                if(!get_flag(7)) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;}
                 break;
             case 0xF1:
                 cycles += 10;
@@ -796,13 +822,16 @@ namespace Z80
                 di();
                 pc++; break;
             case 0xF4:
-                cycles += 17/10;
                 if(!get_flag(7))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
+                    cycles += 10;
                     pc += 3;
+                }
                 break;
             case 0xF5:
                 cycles += 11;
@@ -817,9 +846,8 @@ namespace Z80
                 push(pc+1);
                 pc = 0x30; break;
             case 0xF8:
-                cycles += 11/5;
-                if(get_flag(7)) pop(pc);
-                else pc++;
+                if(get_flag(7)) {cycles += 11; pop(pc);}
+                else {cycles += 5; pc++;}
                 break;
             case 0xF9:
                 cycles += 6;
@@ -839,16 +867,18 @@ namespace Z80
                 ei();
                 pc++; break;
             case 0xFC:
-                cycles += 17/10;
                 if(get_flag(7))
                 {
+                    cycles += 17;
                     push(pc+3);
                     pc = get_operand(2);
                 }else
+                {
+                    cycles += 10;
                     pc += 3;
+                }
                 break;
             case 0xFD:
-                cycles += 19;
                 // TODO IY
                 break;
             case 0xFE:
@@ -1089,6 +1119,7 @@ namespace Z80
         uint8_t high_nibble = opcode >> 4;
         uint8_t low_nibble = opcode & 0xF;
 
+        cycles += (low_nibble == 0x6) ? 15 : 8;
         switch(high_nibble)
         {
             case 0x0:
