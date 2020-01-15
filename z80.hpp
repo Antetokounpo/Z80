@@ -15,7 +15,7 @@ namespace Z80
     {
         public:
             Z80();
-            ~Z80(){}
+            ~Z80() {}
             virtual void step();
             virtual uint8_t fetch(int offset);
             virtual bool load(const char* filename); /* Loads ROM */

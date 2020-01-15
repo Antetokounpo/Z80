@@ -154,7 +154,7 @@ namespace Z80
                 pc++; break;
             case 0x18: /* jr * */
                 cycles += 12;
-                pc += (int8_t)get_operand(1); break;
+                pc += static_cast<int8_t>(get_operand(1))+2; break;
             case 0x19: /* add hl, de */
                 cycles += 11;
                 add(HL.p, DE.p);
@@ -186,8 +186,8 @@ namespace Z80
             
             case 0x20: /* jr nz, * */
                 if(!get_flag(6)) {cycles += 12; pc += static_cast<int8_t>(get_operand(1));}
-                else {cycles += 7; pc += 2;}
-                break;
+                else cycles += 7;
+                pc += 2; break;
             case 0x21: /* ld hl, ** */
                 cycles += 10;
                 ld(HL.p, get_operand(2));
@@ -219,8 +219,8 @@ namespace Z80
                 break;
             case 0x28: /* jr z, * */
                 if(get_flag(6)) {cycles += 12; pc += static_cast<int8_t>(get_operand(1));}
-                else {cycles += 7; pc += 2;}
-                break;
+                else cycles += 7;
+                pc += 2; break;
             case 0x29: /* add hl, hl */
                 cycles += 11;
                 add(HL.p, HL.p);
@@ -586,7 +586,7 @@ namespace Z80
                 break;
             case 0xCB:
                 pc++;
-                interpret_bits(fetch(0));
+                interpret_bits(fetch(0)); /* Cycle incrementation inside of function */
                 pc++; break;
             case 0xCC: /* call z, ** */
                 if(get_flag(6))
@@ -1296,11 +1296,6 @@ namespace Z80
         t1 = std::chrono::steady_clock::now();
         for(cycles = 0; cycles<cpu_frequency/refresh_rate;) /* Number of cycles for one frame */
         {
-            if(pc >= rom_size)
-            {
-                std::cout << "Program counter overflow" << std::endl;
-                exit(EXIT_FAILURE);
-            }
             opcode = fetch(0);
             execute(opcode);
         }
@@ -1830,7 +1825,7 @@ namespace Z80
 
     unsigned int Z80::get_flag(unsigned int flag)
     {
-        return *F << flag & 0x1;
+        return *F >> flag & 0x1;
     }
 }
 
