@@ -122,8 +122,7 @@ namespace Z80
                 pc++; break;
             
             case 0x10: /* djnz */
-                cycles += 13/8;
-                djnz((int)get_operand(1)); /* TODO signed value */
+                djnz(static_cast<int8_t>(get_operand(1))); /* Cycle incrementation inside of function */
                 break;
             case 0x11: /* ld de, ** */
                 cycles += 10;
@@ -863,7 +862,7 @@ namespace Z80
             case 0xFB: /* ei */
                 cycles += 4;
                 di();
-                pc++; step(); /* During the execution of this instruction and the following instruction, maskable interrupts are disabled. */
+                pc++; execute(fetch(0)); /* During the execution of this instruction and the following instruction, maskable interrupts are disabled. */
                 ei();
                 pc++; break;
             case 0xFC:
@@ -1450,9 +1449,13 @@ namespace Z80
 
     void Z80::djnz(int value)
     {
+        cycles += 8;
         dec(*B);
         if(*B != 0)
+        {
+            cycles += 5;
             pc += value;
+        }
         else
             pc += 2;
     }
@@ -1781,8 +1784,8 @@ namespace Z80
 
     void Z80::set_flag(uint8_t flag, bool value)
     {
-        *F &= 0x1 << flag ^ 0xFF;
-        *F |= (uint)value;
+        *F &= 0x1 << flag ^ 0xFF; /* reset le flag en question */
+        *F |= value << flag;
     }
 
     void Z80::set_CF(bool value)

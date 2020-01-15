@@ -19,7 +19,7 @@ namespace Z80
             virtual void step();
             virtual uint8_t fetch(int offset);
             virtual bool load(const char* filename); /* Loads ROM */
-            void execute(uint8_t opcode);
+            virtual void execute(uint8_t opcode);
 
             void interrupt();
 
