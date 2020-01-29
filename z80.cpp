@@ -1118,7 +1118,7 @@ namespace Z80
         uint8_t high_nibble = opcode >> 4;
         uint8_t low_nibble = opcode & 0xF;
 
-        cycles += (low_nibble == 0x6) ? 15 : 8;
+        cycles += (low_nibble == 0x6 || low_nibble == 0x6 + 0x8) ? 15 : 8;
         switch(high_nibble)
         {
             case 0x0:
@@ -1766,7 +1766,7 @@ namespace Z80
 
     void Z80::pop(uint16_t& dst)
     {
-       dst = memory[sp+1] << 8 | memory[sp];
+       dst = memory[sp] << 8 | memory[sp+1];
        sp += 2;
     }
 
